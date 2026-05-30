@@ -100,6 +100,8 @@
   min-height: 125vh;
   min-height: 125dvh;
   display: flex;
+  align-items: center;
+  justify-content: flex-start;
   padding:
     calc(var(--nav-clearance) + 8px)
     clamp(12px, 3vw, 40px)
@@ -109,17 +111,17 @@
 }
 
 .comic-panel:first-child {
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 125vh;
+  min-height: 125dvh;
 }
 
 .comic-panel--top {
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
 }
 
 .comic-panel--bottom {
-  align-items: flex-end;
+  align-items: center;
   justify-content: flex-start;
 }
 
@@ -129,20 +131,20 @@
 }
 
 .comic-panel--finale {
-  min-height: 110vh;
+  min-height: 125vh;
 }
 
 .comic-panel--image-only {
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 125vh;
+  min-height: 125dvh;
   align-items: center;
   justify-content: center;
 }
 
 /* Solution beat — image scrolls away, blue card expands */
 .comic-panel--solution {
-  min-height: 160vh;
-  min-height: 160dvh;
+  min-height: 125vh;
+  min-height: 125dvh;
   align-items: center;
   justify-content: flex-start;
   padding-top: calc(var(--nav-clearance) + 24px);
