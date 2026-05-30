@@ -1,0 +1,50 @@
+[project]
+name = "prosecuto-backend"
+version = "0.1.0"
+description = "Prosecuto — Ontario red light camera ticket dispute backend (AI + API services)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # Web server
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
+    "websockets>=12.0",
+    # Schemas / config
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    # Orchestration + RAG
+    "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langgraph>=0.2.0",
+    "langchain-nvidia-ai-endpoints>=0.3.0",
+    "chromadb>=0.5.0",
+    # Memory
+    "redis>=5.0.0",
+    # Tools
+    "tavily-python>=0.5.0",
+    # Logging
+    "structlog>=24.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+package = true

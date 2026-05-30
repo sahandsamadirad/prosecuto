@@ -1,0 +1,48 @@
+# Prosecuto backend dev stack: FastAPI + Redis + Chroma.
+# NIM (LLM/embed/rerank) and Riva/A2F containers are added later once the
+# hackathon hardware is available — for now those are reached over the network
+# via NVIDIA-hosted endpoints using NVIDIA_API_KEY.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Point at the in-compose services regardless of .env localhost values.
+      REDIS_URL: redis://redis:6379/0
+      CHROMA_PERSIST_DIR: /app/data/chroma
+      CORPUS_DIR: /app/data/corpus
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis-data:/data
+
+  # Chroma runs as a local persistent client inside the API container
+  # (data/chroma volume). A standalone chroma service can be added here if
+  # we move to client/server mode:
+  # chroma:
+  #   image: chromadb/chroma:latest
+  #   ports: ["8001:8000"]
+  #   volumes: ["./data/chroma:/chroma/chroma"]
+
+volumes:
+  redis-data:
