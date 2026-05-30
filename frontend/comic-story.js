@@ -9,7 +9,6 @@
   const canvas = document.getElementById('comic-canvas');
   const ctx = canvas.getContext('2d', { alpha: false });
   const progressBar = document.getElementById('comic-progress');
-  const nav = document.getElementById('nav');
   const bubbles = zone.querySelectorAll('.comic-bubble-wrap');
 
   const PANEL_SRC = [
@@ -48,35 +47,31 @@
     return Math.min(Math.max(y / height, 0), 1);
   }
 
-  function drawCover(img, alpha) {
+  /** Fit full panel in frame so in-image speech bubbles are not cropped */
+  const ART_SCALE = 0.58;
+
+  function drawContain(img, alpha) {
     if (!img || !img.naturalWidth) return;
     const cw = canvas.width;
     const ch = canvas.height;
     const sw = img.naturalWidth;
     const sh = img.naturalHeight;
-    const canvasRatio = cw / ch;
-    const srcRatio = sw / sh;
-    let cropX, cropY, cropW, cropH;
-    if (srcRatio > canvasRatio) {
-      cropH = sh;
-      cropW = sh * canvasRatio;
-      cropX = (sw - cropW) / 2;
-      cropY = 0;
-    } else {
-      cropW = sw;
-      cropH = sw / canvasRatio;
-      cropX = 0;
-      cropY = (sh - cropH) / 2;
-    }
+    const maxW = cw * ART_SCALE;
+    const maxH = ch * ART_SCALE;
+    const ratio = Math.min(maxW / sw, maxH / sh);
+    const dw = sw * ratio;
+    const dh = sh * ratio;
+    const dx = (cw - dw) / 2;
+    const dy = (ch - dh) / 2;
     ctx.globalAlpha = alpha;
-    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cw, ch);
+    ctx.drawImage(img, 0, 0, sw, sh, dx, dy, dw, dh);
     ctx.globalAlpha = 1;
   }
 
   function renderArt(t) {
     const n = images.length;
     if (!n || loaded < n) {
-      ctx.fillStyle = '#0d0d0f';
+      ctx.fillStyle = '#1a2744';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       return;
     }
@@ -85,11 +80,11 @@
     const i1 = Math.min(i0 + 1, n - 1);
     const blend = pos - i0;
 
-    ctx.fillStyle = '#0d0d0f';
+    ctx.fillStyle = '#1a2744';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawCover(images[i0], 1);
+    drawContain(images[i0], 1);
     if (blend > 0.001 && i1 !== i0) {
-      drawCover(images[i1], blend);
+      drawContain(images[i1], blend);
     }
   }
 
@@ -106,12 +101,6 @@
       progressBar.style.width = smoothT * 100 + '%';
       const inZone = t > 0.02 && t < 0.98;
       progressBar.classList.toggle('active', inZone);
-    }
-
-    if (nav) {
-      const rect = zone.getBoundingClientRect();
-      const inside = rect.top < 80 && rect.bottom > 80;
-      nav.classList.toggle('comic-active', inside);
     }
 
     requestAnimationFrame(tick);
@@ -140,7 +129,7 @@
         }
       });
     },
-    { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+    { threshold: 0.08, rootMargin: '0px' }
   );
   bubbles.forEach((b) => io.observe(b));
 

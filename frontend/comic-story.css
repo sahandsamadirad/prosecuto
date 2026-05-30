@@ -1,24 +1,25 @@
 /* ============================================================
-   PROSECUTO — Scroll comic story (Astro-inspired)
-   Fixed art layer + tall scroll panels + speech bubbles
+   PROSECUTO — Scroll comic story
+   Palette + type from NVIDIA comic panels
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,700&display=swap');
-
 .comic-zone {
-  --comic-ink: #0d0d0f;
-  --comic-paper: #f5e6c8;
-  --comic-red: #e63946;
-  --comic-blue: #1d4ed8;
-  --comic-yellow: #ffd60a;
+  --comic-ink: #141414;
+  --comic-paper: #FFF9ED;
+  --comic-red: #E63535;
+  --comic-blue: #1E6FD9;
+  --comic-sky: #87CEEB;
+  --comic-night: #1a2744;
+  --comic-yellow: #FFC72C;
+  --comic-green: #22C55E;
   --comic-font: 'Bangers', Impact, sans-serif;
   --comic-body: 'Comic Neue', 'Comic Sans MS', cursive;
+  --nav-clearance: 88px;
   position: relative;
-  background: var(--comic-ink);
+  background: linear-gradient(180deg, var(--comic-night) 0%, #243b55 50%, var(--comic-night) 100%);
   isolation: isolate;
 }
 
-/* Sticky full-viewport art (scoped to this zone — unlike Astro’s global fixed video) */
 #comic-canvas-wrap {
   position: sticky;
   top: 0;
@@ -47,8 +48,8 @@
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 70% at 50% 45%, transparent 30%, rgba(0,0,0,.55) 100%),
-    linear-gradient(to bottom, rgba(0,0,0,.45) 0%, transparent 18%, transparent 82%, rgba(0,0,0,.5) 100%);
+    radial-gradient(ellipse 70% 60% at 50% 48%, transparent 45%, rgba(26, 39, 68, 0.5) 100%),
+    linear-gradient(to bottom, rgba(26, 39, 68, 0.35) 0%, transparent 22%, transparent 78%, rgba(26, 39, 68, 0.4) 100%);
 }
 
 #comic-halftone {
@@ -56,21 +57,21 @@
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  opacity: 0.12;
+  opacity: 0.08;
   mix-blend-mode: overlay;
   background-image: radial-gradient(circle, #000 1px, transparent 1px);
-  background-size: 4px 4px;
+  background-size: 5px 5px;
 }
 
 #comic-progress {
   position: fixed;
-  top: 0;
+  top: 64px;
   left: 0;
-  height: 3px;
+  height: 4px;
   width: 0%;
-  z-index: 45;
+  z-index: 999;
   background: linear-gradient(90deg, var(--comic-red), var(--comic-yellow), var(--comic-blue));
-  box-shadow: 0 0 14px rgba(255, 214, 10, 0.45);
+  box-shadow: 0 0 12px rgba(255, 199, 44, 0.5);
   opacity: 0;
   transition: opacity 0.35s ease;
   pointer-events: none;
@@ -80,36 +81,52 @@
   opacity: 1;
 }
 
-/* scroll track sits above sticky art */
 #comic-scroll-track {
   position: relative;
-  z-index: 3;
+  z-index: 5;
+  overflow: visible;
 }
 
 .comic-panel {
-  min-height: 125vh;
-  min-height: 125dvh;
+  min-height: 115vh;
+  min-height: 115dvh;
   display: flex;
+  padding:
+    calc(var(--nav-clearance) + 12px)
+    clamp(16px, 4vw, 48px)
+    clamp(48px, 8vh, 80px);
+  overflow: visible;
+}
+
+.comic-panel--top {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.comic-panel--bottom {
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.comic-panel--center {
   align-items: center;
   justify-content: center;
-  padding: clamp(72px, 12vh, 120px) clamp(16px, 4vw, 48px);
 }
 
 .comic-panel:first-child {
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 105vh;
+  min-height: 105dvh;
 }
 
 .comic-panel--finale {
-  min-height: 110vh;
+  min-height: 100vh;
 }
 
-/* speech / caption cards */
 .comic-bubble-wrap {
-  width: min(100%, 520px);
+  width: min(100%, 440px);
   opacity: 0;
-  transform: translateY(48px) scale(0.96) rotate(-1deg);
-  transition: opacity 0.01ms, transform 0.01ms;
+  transform: translateY(32px) scale(0.97);
+  overflow: visible;
   will-change: transform, opacity;
 }
 
@@ -120,11 +137,11 @@
 @keyframes bubble-pop {
   from {
     opacity: 0;
-    transform: translateY(48px) scale(0.96) rotate(-1deg);
+    transform: translateY(32px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1) rotate(0deg);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -133,14 +150,13 @@
   background: var(--comic-paper);
   color: var(--comic-ink);
   border: 4px solid var(--comic-ink);
-  border-radius: 28px;
-  padding: clamp(22px, 4vw, 34px) clamp(24px, 4.5vw, 40px);
-  box-shadow:
-    8px 8px 0 var(--comic-ink),
-    0 20px 50px rgba(0,0,0,.35);
+  border-radius: 24px;
+  padding: clamp(18px, 3vw, 28px) clamp(20px, 3.5vw, 32px);
+  box-shadow: 6px 6px 0 var(--comic-ink);
   font-family: var(--comic-body);
-  font-size: clamp(16px, 2.2vw, 19px);
-  line-height: 1.45;
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.5;
+  overflow: visible;
 }
 
 .comic-bubble::after {
@@ -148,17 +164,22 @@
   position: absolute;
   width: 0;
   height: 0;
-  border: 18px solid transparent;
+  border: 16px solid transparent;
 }
 
 .comic-bubble-wrap--left {
   margin-right: auto;
-  margin-left: clamp(0px, 6vw, 80px);
+  margin-left: clamp(0px, 4vw, 48px);
+}
+
+.comic-bubble-wrap--right {
+  margin-left: auto;
+  margin-right: clamp(0px, 4vw, 48px);
 }
 
 .comic-bubble-wrap--left .comic-bubble::after {
-  left: 42px;
-  bottom: -36px;
+  left: 40px;
+  bottom: -32px;
   border-top-color: var(--comic-ink);
   border-bottom: 0;
 }
@@ -166,21 +187,16 @@
 .comic-bubble-wrap--left .comic-bubble::before {
   content: '';
   position: absolute;
-  left: 46px;
-  bottom: -26px;
-  border: 14px solid transparent;
+  left: 44px;
+  bottom: -24px;
+  border: 12px solid transparent;
   border-top-color: var(--comic-paper);
   z-index: 1;
 }
 
-.comic-bubble-wrap--right {
-  margin-left: auto;
-  margin-right: clamp(0px, 6vw, 80px);
-}
-
 .comic-bubble-wrap--right .comic-bubble::after {
-  right: 42px;
-  bottom: -36px;
+  right: 40px;
+  bottom: -32px;
   border-top-color: var(--comic-ink);
   border-bottom: 0;
 }
@@ -188,9 +204,9 @@
 .comic-bubble-wrap--right .comic-bubble::before {
   content: '';
   position: absolute;
-  right: 46px;
-  bottom: -26px;
-  border: 14px solid transparent;
+  right: 44px;
+  bottom: -24px;
+  border: 12px solid transparent;
   border-top-color: var(--comic-paper);
   z-index: 1;
 }
@@ -203,7 +219,7 @@
 .comic-bubble-wrap--center .comic-bubble::after {
   left: 50%;
   transform: translateX(-50%);
-  bottom: -36px;
+  bottom: -32px;
   border-top-color: var(--comic-ink);
   border-bottom: 0;
 }
@@ -213,42 +229,39 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: -26px;
-  border: 14px solid transparent;
+  bottom: -24px;
+  border: 12px solid transparent;
   border-top-color: var(--comic-paper);
   z-index: 1;
 }
 
 .comic-chapter {
-  font-family: var(--mono, 'IBM Plex Mono', monospace);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+  font-family: var(--comic-font);
+  font-size: 14px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--comic-red);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .comic-title {
   font-family: var(--comic-font);
-  font-size: clamp(36px, 7vw, 58px);
+  font-size: clamp(32px, 6vw, 52px);
   line-height: 0.95;
-  letter-spacing: 0.04em;
-  margin: 0 0 12px;
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
   text-transform: uppercase;
 }
 
 .comic-title--fx {
   color: var(--comic-yellow);
-  text-shadow:
-    3px 3px 0 var(--comic-ink),
-    -1px -1px 0 var(--comic-red);
+  text-shadow: 3px 3px 0 var(--comic-ink), -1px -1px 0 var(--comic-red);
 }
 
 .comic-quote {
   font-family: var(--comic-font);
-  font-size: clamp(22px, 4vw, 32px);
-  letter-spacing: 0.06em;
+  font-size: clamp(20px, 3.5vw, 28px);
+  letter-spacing: 0.05em;
   color: var(--comic-blue);
   margin: 0 0 8px;
 }
@@ -259,59 +272,62 @@
 }
 
 .comic-bubble p + p {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .comic-sfx {
   display: inline-block;
   font-family: var(--comic-font);
-  font-size: clamp(28px, 5vw, 42px);
+  font-size: clamp(26px, 4.5vw, 38px);
   color: var(--comic-yellow);
   text-shadow: 3px 3px 0 var(--comic-ink);
   transform: rotate(-4deg);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
-/* section intro strip */
 .comic-intro {
   position: relative;
-  z-index: 4;
+  z-index: 10;
   text-align: center;
-  padding: 48px var(--pad, 24px) 28px;
-  background: linear-gradient(to bottom, var(--bg, #F4F3EF), var(--comic-ink));
+  padding: 48px var(--pad, 24px) 32px;
+  background: linear-gradient(to bottom, var(--bg, #EAF4FC), var(--comic-night));
   border-bottom: 4px solid var(--comic-ink);
 }
 
 .comic-intro .eyebrow {
-  color: var(--muted-2, #95918A);
+  font-family: var(--comic-font);
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  color: var(--comic-blue);
 }
 
 .comic-intro h2 {
-  font-family: var(--serif, 'Newsreader', serif);
-  font-size: clamp(32px, 5vw, 52px);
-  color: var(--ink, #1F1D1A);
+  font-family: var(--comic-font);
+  font-size: clamp(36px, 6vw, 56px);
+  color: var(--comic-ink);
   margin: 12px 0 8px;
+  text-transform: uppercase;
 }
 
 .comic-intro p {
   max-width: 42ch;
   margin: 0 auto;
-  color: var(--muted, #6B675F);
-  font-size: 17px;
+  color: var(--muted, #3D4F66);
+  font-family: var(--comic-body);
+  font-size: 18px;
 }
 
 .comic-scroll-hint {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
   margin-top: 22px;
   font-family: var(--comic-font);
-  font-size: 20px;
+  font-size: 22px;
   letter-spacing: 0.08em;
   color: var(--comic-ink);
   background: var(--comic-yellow);
   border: 3px solid var(--comic-ink);
-  padding: 10px 20px;
+  padding: 10px 22px;
   border-radius: 100px;
   box-shadow: 4px 4px 0 var(--comic-ink);
   animation: hint-bounce 2s ease-in-out infinite;
@@ -324,48 +340,55 @@
 
 .comic-outro {
   position: relative;
-  z-index: 4;
+  z-index: 10;
   text-align: center;
   padding: 56px var(--pad, 24px);
-  background: linear-gradient(to bottom, var(--comic-ink), var(--bg, #F4F3EF));
+  background: linear-gradient(to bottom, var(--comic-night), var(--bg, #EAF4FC));
 }
 
 .comic-outro p {
-  font-family: var(--serif, 'Newsreader', serif);
-  font-size: clamp(22px, 3.5vw, 34px);
+  font-family: var(--comic-font);
+  font-size: clamp(28px, 4vw, 40px);
   color: var(--comic-paper);
   max-width: 22ch;
   margin: 0 auto 20px;
-  line-height: 1.2;
+  line-height: 1.05;
+  text-transform: uppercase;
 }
 
-.comic-outro .btn {
-  box-shadow: 4px 4px 0 var(--comic-ink);
-}
-
-/* nav tweak when in comic zone */
+/* Nav always readable over comic scroll */
 .nav.comic-active {
-  background: rgba(13, 13, 15, 0.75);
-  backdrop-filter: blur(12px);
-  border-bottom-color: rgba(255,255,255,.08);
+  z-index: 1000;
+  background: rgba(26, 39, 68, 0.94) !important;
+  backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 3px solid var(--comic-ink) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
+
 .nav.comic-active .brand,
 .nav.comic-active .nav-links a:hover {
-  color: #f4f3ef;
+  color: #fff;
 }
+
 .nav.comic-active .nav-links a {
-  color: rgba(244,243,239,.65);
+  color: rgba(255, 255, 255, 0.88);
 }
+
 .nav.comic-active .brand .mark {
-  background: var(--comic-yellow);
+  background: var(--comic-blue);
+  border-color: #fff;
 }
+
 .nav.comic-active .brand .mark::after {
-  background: var(--comic-ink);
-  box-shadow: 0 4px 0 var(--comic-ink), 0 8px 0 var(--comic-ink);
+  background: #fff;
+  box-shadow: 0 4px 0 #fff, 0 8px 0 #fff;
 }
+
 .nav.comic-active .btn-ghost {
-  color: #f4f3ef;
-  border-color: rgba(255,255,255,.25);
+  color: var(--comic-ink);
+  background: var(--comic-yellow);
+  border-color: var(--comic-ink);
+  box-shadow: 3px 3px 0 var(--comic-ink);
 }
 
 @media (max-width: 720px) {
@@ -373,8 +396,8 @@
   .comic-bubble-wrap--right {
     margin-inline: auto;
   }
-  .comic-bubble {
-    box-shadow: 6px 6px 0 var(--comic-ink);
+  .comic-panel {
+    padding-inline: 16px;
   }
 }
 

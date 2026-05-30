@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,700&display=swap">
 <link rel="stylesheet" href="comic-story.css">
 <title>Prosecuto — Dispute your red light camera ticket</title>
 <style>
@@ -16,22 +16,24 @@
 
 
 :root {
-  /* paper + ink */
-  --bg:        #F4F3EF;   /* Harvey clean warm-white (de-saturated) */
-  --bg-tint:   #ECEAE3;   /* slightly deeper panel */
-  --surface:   #FBFBF8;   /* card / raised */
-  --surface-2: #F7F6F1;
-  --ink:       #1F1D1A;   /* Harvey brand ink (theme-color) */
-  --muted:     #6B675F;   /* secondary text */
-  --muted-2:   #95918A;   /* tertiary (neutralised) */
-  --line:      #E3E1D9;   /* hairline */
-  --line-2:    #D2CFC5;
-  --accent:    #1F1D1A;   /* CTA = ink, monochrome */
-  --on-accent: #F4F3EF;
+  /* palette from comic art: sky, shirt blue, car red, ZAP yellow, paper */
+  --bg:        #EAF4FC;
+  --bg-tint:   #D4E8F7;
+  --surface:   #FFF9ED;
+  --surface-2: #FFF3D6;
+  --ink:       #141414;
+  --muted:     #3D4F66;
+  --muted-2:   #5C6F85;
+  --line:      #B8C9DC;
+  --line-2:    #8FA8C4;
+  --accent:    #1E6FD9;
+  --accent-red: #E63535;
+  --comic-yellow: #FFC72C;
+  --on-accent: #FFFFFF;
 
-  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --sans:  'Hanken Grotesk', system-ui, -apple-system, sans-serif;
-  --mono:  'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  --serif: 'Bangers', Impact, sans-serif;
+  --sans:  'Comic Neue', 'Comic Sans MS', cursive;
+  --mono:  'Comic Neue', 'Comic Sans MS', cursive;
 
   --maxw: 1240px;
   --pad: clamp(20px, 5vw, 64px);
@@ -62,8 +64,8 @@ img, video { display: block; max-width: 100%; }
   text-transform: uppercase;
   color: var(--muted-2);
 }
-.serif { font-family: var(--serif); font-weight: 400; letter-spacing: -0.018em; }
-h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; margin: 0; }
+.serif { font-family: var(--serif); font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em; margin: 0; }
 
 /* ---- buttons ---- */
 .btn {
@@ -79,10 +81,10 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
   white-space: nowrap;
 }
 .btn:active { transform: translateY(1px); }
-.btn-primary { background: var(--ink); color: var(--on-accent); }
-.btn-primary:hover { background: #2e2b24; }
-.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
-.btn-ghost:hover { background: #1f1d1a0a; border-color: var(--ink); }
+.btn-primary { background: var(--accent); color: var(--on-accent); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+.btn-primary:hover { background: #1558b0; }
+.btn-ghost { background: var(--surface); color: var(--ink); border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.btn-ghost:hover { background: var(--comic-yellow); border-color: var(--ink); }
 .btn .arrow { transition: transform .25s ease; }
 .btn:hover .arrow { transform: translateX(3px); }
 
@@ -110,7 +112,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
 <style>
   /* ---------- NAV ---------- */
   .nav {
-    position: fixed; inset: 0 0 auto 0; z-index: 50;
+    position: fixed; inset: 0 0 auto 0; z-index: 1000;
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px var(--pad);
     transition: background .3s ease, border-color .3s ease, backdrop-filter .3s ease;
@@ -121,10 +123,10 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
     backdrop-filter: saturate(1.2) blur(14px);
     border-bottom: 1px solid var(--line);
   }
-  .brand { display: flex; align-items: center; gap: 11px; font-family: var(--serif); font-size: 23px; letter-spacing: -0.02em; }
+  .brand { display: flex; align-items: center; gap: 11px; font-family: var(--serif); font-size: 26px; letter-spacing: 0.06em; text-transform: uppercase; }
   .brand .mark {
-    width: 26px; height: 26px; border-radius: 50%;
-    background: var(--ink); position: relative; flex: none;
+    width: 26px; height: 26px; border-radius: 6px;
+    background: var(--accent); border: 2px solid var(--ink); position: relative; flex: none;
   }
   .brand .mark::after {
     content: ""; position: absolute; inset: 8px 8px auto 8px; height: 2px;
@@ -144,7 +146,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
     line-height: 0.98; letter-spacing: -0.03em; font-weight: 400;
     max-width: 16ch; text-wrap: balance;
   }
-  .hero h1 em { font-style: italic; color: var(--muted); }
+  .hero h1 em { font-style: normal; color: var(--accent-red); }
   .hero-sub {
     max-width: 52ch; font-size: clamp(17px, 1.5vw, 20px);
     color: var(--muted); line-height: 1.55; margin-top: 6px;
@@ -199,7 +201,8 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
   .paths { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 50px; }
   @media (max-width: 760px){ .paths { grid-template-columns: 1fr; } }
   .path-card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); border: 3px solid var(--ink); border-radius: 12px;
+    box-shadow: 5px 5px 0 var(--ink);
     padding: 34px 32px; display: flex; flex-direction: column; gap: 16px; min-height: 320px;
   }
   .path-card .tag { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); }
@@ -256,7 +259,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
   .fact .fl { color: var(--muted); font-size: 14px; margin-top: 8px; line-height: 1.4; }
 
   /* ---------- CLOSING CTA ---------- */
-  .cta { background: var(--ink); color: var(--on-accent); padding: 110px 0 96px; margin-top: 40px; }
+  .cta { background: linear-gradient(160deg, #1a2744 0%, #1E6FD9 100%); color: var(--on-accent); padding: 110px 0 96px; margin-top: 40px; border-top: 4px solid var(--ink); }
   .cta .eyebrow { color: #b9b1a0; }
   .cta h2 { color: var(--on-accent); font-size: clamp(40px, 5.6vw, 76px); line-height: 1.0; letter-spacing: -0.03em; max-width: 15ch; }
   .cta p { color: #c7bfae; font-size: 19px; max-width: 46ch; margin-top: 22px; }
@@ -308,15 +311,9 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
 <section class="hero wrap">
   <div class="hero-grid">
     <div>
-      <p class="eyebrow reveal" style="margin-bottom:26px">Ontario · Red light camera tickets · HTA s.144</p>
       <h1 class="reveal">Fight your ticket. <em>Without a lawyer.</em></h1>
       <p class="hero-sub reveal" style="transition-delay:.05s">Prosecuto prepares Ontario citizens to dispute a red light camera ticket — coaching you through Early Resolution and rehearsing the full trial against an AI Justice of the Peace before you ever set foot in court.</p>
-      <div class="hero-meta eyebrow reveal" style="transition-delay:.1s; color:var(--muted)">
-        <span><span class="dot"></span>No demerit points</span>
-        <span><span class="dot"></span>Owner liability only</span>
-        <span><span class="dot"></span>Built at NVIDIA Hackathon</span>
-      </div>
-      <div class="hero-actions reveal" style="transition-delay:.15s">
+      <div class="hero-actions reveal" style="transition-delay:.1s">
         <a class="btn btn-primary" href="Judge - Mock Trial.html">Run mock trial <span class="arrow">→</span></a>
         <a class="btn btn-ghost" href="#story">Read the story</a>
       </div>
@@ -358,7 +355,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
   </div>
 
   <div id="comic-scroll-track">
-    <article class="comic-panel" data-panel="0">
+    <article class="comic-panel comic-panel--top" data-panel="0">
       <div class="comic-bubble-wrap comic-bubble-wrap--left visible">
         <div class="comic-bubble">
           <p class="comic-chapter">Panel 01</p>
@@ -368,7 +365,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
       </div>
     </article>
 
-    <article class="comic-panel" data-panel="1">
+    <article class="comic-panel comic-panel--bottom" data-panel="1">
       <div class="comic-bubble-wrap comic-bubble-wrap--right">
         <div class="comic-bubble">
           <p class="comic-chapter">Panel 02</p>
@@ -378,7 +375,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
       </div>
     </article>
 
-    <article class="comic-panel" data-panel="2">
+    <article class="comic-panel comic-panel--top" data-panel="2">
       <div class="comic-bubble-wrap comic-bubble-wrap--left">
         <div class="comic-bubble">
           <p class="comic-chapter">Panel 03</p>
@@ -388,7 +385,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
       </div>
     </article>
 
-    <article class="comic-panel" data-panel="3">
+    <article class="comic-panel comic-panel--bottom" data-panel="3">
       <div class="comic-bubble-wrap comic-bubble-wrap--right">
         <div class="comic-bubble">
           <p class="comic-chapter">Panel 04</p>
@@ -398,7 +395,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
       </div>
     </article>
 
-    <article class="comic-panel" data-panel="4">
+    <article class="comic-panel comic-panel--top" data-panel="4">
       <div class="comic-bubble-wrap comic-bubble-wrap--left">
         <div class="comic-bubble">
           <p class="comic-chapter">Panel 05</p>
@@ -408,7 +405,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
       </div>
     </article>
 
-    <article class="comic-panel comic-panel--finale" data-panel="5">
+    <article class="comic-panel comic-panel--center comic-panel--finale" data-panel="5">
       <div class="comic-bubble-wrap comic-bubble-wrap--center">
         <div class="comic-bubble">
           <p class="comic-chapter">Panel 06</p>
@@ -593,7 +590,15 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
 <script>
   // nav solid on scroll
   const nav = document.getElementById('nav');
-  const onScroll = () => nav.classList.toggle('solid', window.scrollY > 24);
+  const comicZone = document.getElementById('comic-zone');
+  const onScroll = () => {
+    const inComic = comicZone && (() => {
+      const r = comicZone.getBoundingClientRect();
+      return r.top < 72 && r.bottom > 72;
+    })();
+    nav.classList.toggle('solid', window.scrollY > 24 || inComic);
+    nav.classList.toggle('comic-active', !!inComic);
+  };
   onScroll(); addEventListener('scroll', onScroll, { passive: true });
 
   // scroll reveal — with robust fallbacks so content never stays hidden

@@ -3,25 +3,26 @@
    Editorial legal-tech: warm paper, ink black, refined serif.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opt,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,700&display=swap');
 
 :root {
-  /* paper + ink */
-  --bg:        #F4F3EF;   /* Harvey clean warm-white (de-saturated) */
-  --bg-tint:   #ECEAE3;   /* slightly deeper panel */
-  --surface:   #FBFBF8;   /* card / raised */
-  --surface-2: #F7F6F1;
-  --ink:       #1F1D1A;   /* Harvey brand ink (theme-color) */
-  --muted:     #6B675F;   /* secondary text */
-  --muted-2:   #95918A;   /* tertiary (neutralised) */
-  --line:      #E3E1D9;   /* hairline */
-  --line-2:    #D2CFC5;
-  --accent:    #1F1D1A;   /* CTA = ink, monochrome */
-  --on-accent: #F4F3EF;
+  --bg:        #EAF4FC;
+  --bg-tint:   #D4E8F7;
+  --surface:   #FFF9ED;
+  --surface-2: #FFF3D6;
+  --ink:       #141414;
+  --muted:     #3D4F66;
+  --muted-2:   #5C6F85;
+  --line:      #B8C9DC;
+  --line-2:    #8FA8C4;
+  --accent:    #1E6FD9;
+  --accent-red: #E63535;
+  --comic-yellow: #FFC72C;
+  --on-accent: #FFFFFF;
 
-  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --sans:  'Hanken Grotesk', system-ui, -apple-system, sans-serif;
-  --mono:  'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  --serif: 'Bangers', Impact, sans-serif;
+  --sans:  'Comic Neue', 'Comic Sans MS', cursive;
+  --mono:  'Comic Neue', 'Comic Sans MS', cursive;
 
   --maxw: 1240px;
   --pad: clamp(20px, 5vw, 64px);
@@ -69,10 +70,10 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
   white-space: nowrap;
 }
 .btn:active { transform: translateY(1px); }
-.btn-primary { background: var(--ink); color: var(--on-accent); }
-.btn-primary:hover { background: #2e2b24; }
-.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
-.btn-ghost:hover { background: #1f1d1a0a; border-color: var(--ink); }
+.btn-primary { background: var(--accent); color: var(--on-accent); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+.btn-primary:hover { background: #1558b0; }
+.btn-ghost { background: var(--surface); color: var(--ink); border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.btn-ghost:hover { background: var(--comic-yellow); border-color: var(--ink); }
 .btn .arrow { transition: transform .25s ease; }
 .btn:hover .arrow { transform: translateX(3px); }
 
