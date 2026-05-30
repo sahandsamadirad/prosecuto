@@ -53,8 +53,9 @@ class Settings(BaseSettings):
     nim_embed_model: str = Field(
         default="nvidia/nv-embedqa-e5-v5", alias="NIM_EMBED_MODEL"
     )
+    # Hosted model id for the spec's "nvidia/rerank-qa-mistral-4b".
     nim_rerank_model: str = Field(
-        default="nvidia/rerank-qa-mistral-4b", alias="NIM_RERANK_MODEL"
+        default="nv-rerank-qa-mistral-4b:1", alias="NIM_RERANK_MODEL"
     )
 
     # --- Voice / avatar gRPC endpoints -----------------------------------
