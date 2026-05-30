@@ -53,6 +53,16 @@ class AvatarStage {
     this.lookTarget = new THREE.Vector3();
     this._tmp = new THREE.Vector3();
     this._quat = new THREE.Quaternion();
+    this._offsetQuat = new THREE.Quaternion();
+    this._eyeQuat = new THREE.Quaternion();
+    this._euler = new THREE.Euler(0, 0, 0, 'YXZ');
+
+    // Cursor tracking — normalized -1..1 relative to viewport center.
+    this._pointer = { x: 0, y: 0 };
+    this._pointerSmooth = { x: 0, y: 0 };
+    this._pointerActive = false;
+    this._lastPointerAt = 0;
+    this._headOriginalRot = null;
 
     this.scene = new THREE.Scene();
     this.clock = new THREE.Clock();
@@ -95,6 +105,23 @@ class AvatarStage {
     this._ro = new ResizeObserver(this._onResize);
     this._ro.observe(container);
 
+    this._onPointerMove = (e) => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = (e.clientY / window.innerHeight) * 2 - 1;
+      this._pointer.x = Math.max(-1, Math.min(1, x));
+      this._pointer.y = Math.max(-1, Math.min(1, y));
+      this._pointerActive = true;
+      this._lastPointerAt = performance.now();
+    };
+    this._onPointerLeave = () => {
+      this._pointerActive = false;
+      this._pointer.x = 0;
+      this._pointer.y = 0;
+    };
+    window.addEventListener('pointermove', this._onPointerMove, { passive: true });
+    window.addEventListener('pointerleave', this._onPointerLeave);
+    document.addEventListener('mouseleave', this._onPointerLeave);
+
     this._load();
     this._tick = this._tick.bind(this);
     this._raf = requestAnimationFrame(this._tick);
@@ -123,6 +150,53 @@ class AvatarStage {
       if (child.name === 'LeftEye') this.leftEye = child;
       if (child.name === 'RightEye') this.rightEye = child;
     });
+
+    if (this.leftEye) {
+      this._leftEyeBaseRot = this.leftEye.quaternion.clone();
+    }
+    if (this.rightEye) {
+      this._rightEyeBaseRot = this.rightEye.quaternion.clone();
+    }
+  }
+
+  _applyCursorTracking(dt) {
+    if (!this.headBone) return;
+
+    // Damped follow: ease toward target each frame.
+    const ease = 1 - Math.pow(0.001, dt); // ~0.999 lerp/sec
+    this._pointerSmooth.x += (this._pointer.x - this._pointerSmooth.x) * ease;
+    this._pointerSmooth.y += (this._pointer.y - this._pointerSmooth.y) * ease;
+
+    const px = this._pointerSmooth.x;
+    const py = this._pointerSmooth.y;
+
+    // Head: subtle nod + turn (degrees -> radians).
+    const headYawDeg = -px * 14;
+    const headPitchDeg = py * 9;
+    this._euler.set(headPitchDeg * DEG, headYawDeg * DEG, 0, 'YXZ');
+    this._offsetQuat.setFromEuler(this._euler);
+
+    // Compose on top of whatever the animation/mixer set this frame.
+    this.headBone.quaternion.multiply(this._offsetQuat);
+
+    // Eyes: stronger, snappier follow for "alive" feel.
+    if (this.leftEye && this.rightEye) {
+      const eyeYawDeg = -px * 22;
+      const eyePitchDeg = py * 14;
+      this._euler.set(eyePitchDeg * DEG, eyeYawDeg * DEG, 0, 'YXZ');
+      this._eyeQuat.setFromEuler(this._euler);
+
+      if (this._leftEyeBaseRot) {
+        this.leftEye.quaternion.copy(this._leftEyeBaseRot).multiply(this._eyeQuat);
+      } else {
+        this.leftEye.quaternion.multiply(this._eyeQuat);
+      }
+      if (this._rightEyeBaseRot) {
+        this.rightEye.quaternion.copy(this._rightEyeBaseRot).multiply(this._eyeQuat);
+      } else {
+        this.rightEye.quaternion.multiply(this._eyeQuat);
+      }
+    }
   }
 
   /** How much the face points toward the camera on +Z. */
@@ -287,8 +361,12 @@ class AvatarStage {
 
   _tick() {
     if (this.disposed) return;
-    const dt = this.clock.getDelta();
+    const dt = Math.min(this.clock.getDelta(), 0.1);
     this.mixer?.update(dt);
+
+    // Apply cursor-driven head + eye offsets AFTER the animation mixer
+    // so we layer on top of the idle/speak motion.
+    this._applyCursorTracking(dt);
 
     if (this.headBone && this.camera) {
       this.headBone.getWorldPosition(this._tmp);
@@ -305,6 +383,9 @@ class AvatarStage {
     this.disposed = true;
     cancelAnimationFrame(this._raf);
     this._ro?.disconnect();
+    window.removeEventListener('pointermove', this._onPointerMove);
+    window.removeEventListener('pointerleave', this._onPointerLeave);
+    document.removeEventListener('mouseleave', this._onPointerLeave);
     this.mixer?.stopAllAction();
     this.renderer.dispose();
     this.renderer.domElement.remove();
