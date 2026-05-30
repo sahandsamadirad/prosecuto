@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>Prosecuto · Judge Mode — Mock Trial</title>
+<style>
+/* ============================================================
+   PROSECUTO — shared design system
+   Editorial legal-tech: warm paper, ink black, refined serif.
+   ============================================================ */
+
+
+:root {
+  /* paper + ink */
+  --bg:        #F4F3EF;   /* Harvey clean warm-white (de-saturated) */
+  --bg-tint:   #ECEAE3;   /* slightly deeper panel */
+  --surface:   #FBFBF8;   /* card / raised */
+  --surface-2: #F7F6F1;
+  --ink:       #1F1D1A;   /* Harvey brand ink (theme-color) */
+  --muted:     #6B675F;   /* secondary text */
+  --muted-2:   #95918A;   /* tertiary (neutralised) */
+  --line:      #E3E1D9;   /* hairline */
+  --line-2:    #D2CFC5;
+  --accent:    #1F1D1A;   /* CTA = ink, monochrome */
+  --on-accent: #F4F3EF;
+
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --sans:  'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  --mono:  'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  --maxw: 1240px;
+  --pad: clamp(20px, 5vw, 64px);
+  --r: 4px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+::selection { background: #1f1d1a1f; }
+a { color: inherit; text-decoration: none; }
+img, video { display: block; max-width: 100%; }
+
+/* ---- type primitives ---- */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+.serif { font-family: var(--serif); font-weight: 400; letter-spacing: -0.018em; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; margin: 0; }
+
+/* ---- buttons ---- */
+.btn {
+  --bw: 1px;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--sans); font-size: 15px; font-weight: 500;
+  letter-spacing: 0;
+  padding: 14px 22px;
+  border-radius: 100px;
+  border: var(--bw) solid transparent;
+  cursor: pointer;
+  transition: background .25s ease, color .25s ease, border-color .25s ease, transform .15s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--ink); color: var(--on-accent); }
+.btn-primary:hover { background: #2e2b24; }
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+.btn-ghost:hover { background: #1f1d1a0a; border-color: var(--ink); }
+.btn .arrow { transition: transform .25s ease; }
+.btn:hover .arrow { transform: translateX(3px); }
+
+/* ---- layout helpers ---- */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--pad); }
+.hairline { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+/* reveal on scroll — visible by default (opacity 1) so content NEVER hides;
+   JS only removes a subtle offset for a gentle entrance. */
+.reveal { opacity: 1; transform: translateY(14px); transition: transform .7s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+.reveal.in { transform: none; }
+
+/* striped placeholder texture (for video / avatar slots) */
+.placeholder-stripes {
+  background-color: var(--bg-tint);
+  background-image: repeating-linear-gradient(
+    -45deg, transparent 0 11px, #1a191609 11px 12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ============================================================
+   PROSECUTO — meeting room (Lawyer & Judge shared layout)
+   3D avatar stage (left) · transcript + chat + documents (right)
+   ============================================================ */
+
+.room {
+  height: 100vh; height: 100dvh; width: 100%;
+  display: grid; grid-template-columns: minmax(380px, 42%) 1fr;
+  overflow: hidden;
+}
+@media (max-width: 900px){ .room { grid-template-columns: 1fr; grid-template-rows: 38vh 1fr; } }
+
+/* ---------------- LEFT · AVATAR STAGE ---------------- */
+.stage {
+  position: relative; height: 100%;
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column;
+  background: var(--bg-tint);
+  overflow: hidden;
+}
+/* the actual 3D face goes here — placeholder fill */
+.avatar-slot {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 22px;
+}
+.avatar-slot .ring {
+  width: clamp(150px, 26vh, 230px); aspect-ratio: 1; border-radius: 50%;
+  border: 1.5px solid var(--line-2);
+  display: grid; place-items: center; position: relative;
+  background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--bg) 60%, transparent), transparent 70%);
+}
+.avatar-slot .ring::before {
+  content: ""; position: absolute; inset: -1.5px; border-radius: 50%;
+  border: 1.5px solid var(--ink); clip-path: inset(0 0 50% 0);
+  opacity: 0; transition: opacity .3s;
+}
+.stage.speaking .avatar-slot .ring::before { opacity: .9; animation: spin 2.4s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.avatar-glyph { font-family: var(--serif); font-size: clamp(46px, 8vh, 80px); color: var(--ink); }
+.avatar-slot code { font-family: var(--mono); font-size: 11.5px; color: var(--muted); letter-spacing: .03em; text-align: center; }
+.avatar-slot .who-name { font-family: var(--serif); font-size: 26px; }
+.avatar-slot .who-role { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-2); margin-top: 4px; }
+
+/* top-left chrome */
+.stage-top {
+  position: relative; z-index: 3;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px;
+}
+.back-link { display: inline-flex; align-items: center; gap: 9px; font-size: 14px; color: var(--ink); }
+.back-link:hover { opacity: .65; }
+.mode-pill {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+  padding: 6px 11px; border-radius: 100px; border: 1px solid var(--line-2);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+}
+
+/* live caption over the avatar */
+.caption {
+  position: relative; z-index: 3; margin-top: auto;
+  padding: 22px; 
+}
+.caption-inner {
+  background: color-mix(in srgb, var(--ink) 92%, transparent); color: var(--on-accent);
+  border-radius: 12px; padding: 18px 20px; min-height: 58px;
+  font-size: 18px; line-height: 1.45; letter-spacing: -.01em;
+  box-shadow: 0 12px 40px -16px rgba(0,0,0,.4);
+  opacity: 0; transform: translateY(8px); transition: opacity .4s, transform .4s;
+}
+.caption-inner.show { opacity: 1; transform: none; }
+.caption .spk { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #b9b1a0; display: block; margin-bottom: 8px; }
+/* speaking waveform */
+.wave { display: inline-flex; align-items: flex-end; gap: 3px; height: 14px; margin-left: 8px; vertical-align: middle; }
+.wave i { width: 3px; height: 5px; background: #b9b1a0; border-radius: 2px; }
+.stage.speaking .wave i { animation: bounce .9s ease-in-out infinite; }
+.wave i:nth-child(2){ animation-delay: .15s } .wave i:nth-child(3){ animation-delay: .3s }
+.wave i:nth-child(4){ animation-delay: .45s } .wave i:nth-child(5){ animation-delay: .1s }
+@keyframes bounce { 0%,100%{ height: 4px } 50%{ height: 14px } }
+
+/* ---------------- RIGHT · CONVERSATION ---------------- */
+.panel { display: flex; flex-direction: column; height: 100%; min-width: 0; background: var(--bg); }
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 24px; border-bottom: 1px solid var(--line);
+}
+.panel-head h1 { font-size: 21px; }
+.panel-head .sub { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); }
+.head-tabs { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 100px; padding: 3px; }
+.head-tabs button {
+  font-family: var(--sans); font-size: 13px; color: var(--muted); border: 0; background: transparent;
+  padding: 7px 15px; border-radius: 100px; cursor: pointer; transition: .2s; display: inline-flex; align-items: center; gap: 7px;
+}
+.head-tabs button.active { background: var(--ink); color: var(--on-accent); }
+.head-tabs .badge { font-family: var(--mono); font-size: 10px; background: var(--bg-tint); color: var(--ink); border-radius: 100px; padding: 1px 6px; }
+.head-tabs button.active .badge { background: #ffffff22; color: var(--on-accent); }
+
+/* transcript scroll area */
+.transcript { flex: 1; overflow-y: auto; padding: 26px 24px 12px; scroll-behavior: smooth; }
+.transcript::-webkit-scrollbar { width: 9px; }
+.transcript::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 100px; border: 3px solid var(--bg); }
+
+.turn { margin-bottom: 24px; max-width: 92%; animation: rise .45s cubic-bezier(.2,.7,.2,1); }
+@keyframes rise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+.turn .meta { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
+.turn .av { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-size: 13px; flex: none; }
+.turn .nm { font-size: 13px; font-weight: 600; }
+.turn .rl { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); }
+.turn .body {
+  font-size: 16px; line-height: 1.55; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px 14px 14px 14px;
+  padding: 14px 17px;
+}
+.turn.me { margin-left: auto; }
+.turn.me .meta { flex-direction: row-reverse; }
+.turn.me .body { background: var(--ink); color: var(--on-accent); border: 0; border-radius: 14px 4px 14px 14px; }
+.turn .av.alex { background: var(--ink); color: var(--on-accent); }
+.turn .av.crown { background: #6f2c2c; color: #f4e7e7; }
+.turn .av.judge { background: #25324a; color: #e7ecf4; }
+.turn .av.clerk { background: var(--bg-tint); color: var(--ink); border: 1px solid var(--line-2); }
+.turn .av.me { background: var(--surface); color: var(--ink); border: 1px solid var(--line-2); }
+
+/* shared-document card inside transcript */
+.doc-card {
+  margin-top: 10px; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: var(--surface);
+  cursor: pointer; transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.doc-card:hover { border-color: var(--ink); transform: translateY(-1px); box-shadow: 0 10px 30px -18px rgba(0,0,0,.35); }
+.doc-card .dc-top { display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-bottom: 1px solid var(--line); }
+.doc-card .dc-ico { width: 34px; height: 42px; border: 1px solid var(--line-2); border-radius: 3px; background: var(--bg); position: relative; flex: none; }
+.doc-card .dc-ico::before { content:""; position:absolute; inset: 7px 7px auto 7px; height: 2px; background: var(--line-2); box-shadow: 0 5px 0 var(--line-2), 0 10px 0 var(--line-2), 0 15px 0 var(--line-2); }
+.doc-card .dc-t { font-family: var(--serif); font-size: 16px; }
+.doc-card .dc-s { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-2); margin-top: 2px; }
+.doc-card .dc-open { margin-left: auto; font-size: 12.5px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+
+/* thinking dots */
+.thinking { display: inline-flex; gap: 5px; padding: 4px 2px; }
+.thinking i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted-2); animation: blink 1.2s infinite both; }
+.thinking i:nth-child(2){ animation-delay: .2s } .thinking i:nth-child(3){ animation-delay: .4s }
+@keyframes blink { 0%,100%{ opacity: .25; transform: translateY(0) } 50%{ opacity: 1; transform: translateY(-3px) } }
+
+/* ---------------- COMPOSER ---------------- */
+.composer { border-top: 1px solid var(--line); padding: 16px 24px 20px; background: var(--bg); }
+.suggest { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip {
+  font-family: var(--sans); font-size: 13.5px; line-height: 1.4; color: var(--ink);
+  border: 1px solid var(--line-2); background: var(--surface); border-radius: 13px;
+  padding: 9px 15px; cursor: pointer; transition: .18s; text-align: left; max-width: 100%;
+}
+.chip:hover { border-color: var(--ink); background: var(--surface-2); transform: translateY(-1px); }
+.input-row { display: flex; align-items: flex-end; gap: 10px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 16px; padding: 8px 8px 8px 16px; transition: border-color .2s; }
+.input-row:focus-within { border-color: var(--ink); }
+.input-row textarea {
+  flex: 1; border: 0; background: transparent; resize: none; outline: none;
+  font-family: var(--sans); font-size: 15.5px; color: var(--ink); line-height: 1.5;
+  max-height: 120px; padding: 6px 0;
+}
+.icon-btn {
+  width: 42px; height: 42px; border-radius: 12px; flex: none; cursor: pointer;
+  display: grid; place-items: center; border: 1px solid var(--line-2); background: var(--bg);
+  transition: .18s; color: var(--ink);
+}
+.icon-btn:hover { background: var(--surface-2); }
+.icon-btn.mic.live { background: #6f2c2c; border-color: #6f2c2c; color: #fff; animation: micpulse 1.4s infinite; }
+@keyframes micpulse { 0%,100%{ box-shadow: 0 0 0 0 #6f2c2c55 } 50%{ box-shadow: 0 0 0 8px #6f2c2c00 } }
+.send-btn { background: var(--ink); color: var(--on-accent); border: 0; }
+.send-btn:hover { background: #2e2b24; }
+.send-btn:disabled { opacity: .4; cursor: default; }
+
+/* ---------------- DOCUMENT VIEWER (right drawer) ---------------- */
+.docview {
+  position: absolute; inset: 0; z-index: 20; pointer-events: none;
+  display: flex; justify-content: flex-end;
+}
+.docview .scrim { position: absolute; inset: 0; background: #1a191600; transition: background .3s; }
+.docview .sheet {
+  position: relative; width: min(560px, 92%); height: 100%; background: var(--surface);
+  border-left: 1px solid var(--line-2); transform: translateX(100%); transition: transform .35s cubic-bezier(.2,.7,.2,1);
+  display: flex; flex-direction: column; box-shadow: -30px 0 80px -40px rgba(0,0,0,.4);
+}
+.docview.open { pointer-events: auto; }
+.docview.open .scrim { background: #1a191633; }
+.docview.open .sheet { transform: none; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+.sheet-head .st { font-family: var(--serif); font-size: 19px; }
+.sheet-head .ss { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); }
+.sheet-body { flex: 1; overflow-y: auto; padding: 28px 30px; }
+.legal-doc { font-family: var(--serif); color: var(--ink); }
+.legal-doc .lh { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-2); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+.legal-doc h2 { font-size: 26px; text-align: center; margin-bottom: 6px; }
+.legal-doc .sec-no { text-align: center; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; margin-bottom: 24px; }
+.legal-doc p { font-size: 16px; line-height: 1.7; margin: 0 0 16px; }
+.legal-doc .fill { background: #efe7d3; border-bottom: 1px solid var(--muted-2); padding: 0 4px; font-style: italic; }
+.legal-doc .cite { font-family: var(--mono); font-size: 13px; background: var(--bg-tint); border-radius: 6px; padding: 12px 14px; line-height: 1.6; }
+.legal-doc .sig-row { display: flex; gap: 40px; margin-top: 40px; }
+.legal-doc .sig { flex: 1; border-top: 1px solid var(--ink); padding-top: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+</style>
+<style>
+  /* phase rail */
+  .rail { display: flex; gap: 0; overflow-x: auto; padding: 10px 24px; border-bottom: 1px solid var(--line); background: var(--surface-2); scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail .ph {
+    display: flex; align-items: center; gap: 9px; flex: none; padding: 5px 16px 5px 0; position: relative;
+    opacity: .42; transition: opacity .3s;
+  }
+  .rail .ph.done { opacity: .7; }
+  .rail .ph.cur { opacity: 1; }
+  .rail .ph .dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line-2); display: grid; place-items: center; font-family: var(--mono); font-size: 9px; color: var(--muted); flex: none; }
+  .rail .ph.cur .dot { background: var(--ink); border-color: var(--ink); color: var(--on-accent); }
+  .rail .ph.done .dot { background: var(--bg-tint); border-color: var(--line-2); }
+  .rail .ph .lb { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+  .rail .ph::after { content: ""; width: 14px; height: 1px; background: var(--line-2); margin-left: 4px; }
+  .rail .ph:last-child::after { display: none; }
+
+  /* verdict banner */
+  .verdict-wrap { animation: rise .5s cubic-bezier(.2,.7,.2,1); margin-bottom: 24px; }
+  .verdict-banner {
+    border: 1px solid var(--ink); border-radius: 12px; overflow: hidden; background: var(--ink); color: var(--on-accent);
+  }
+  .verdict-banner .vb-top { padding: 26px 28px; text-align: center; border-bottom: 1px solid #ffffff1f; }
+  .verdict-banner .vlabel { font-family: var(--mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #b9b1a0; }
+  .verdict-banner .vresult { font-family: var(--serif); font-size: 46px; letter-spacing: -.02em; margin-top: 8px; }
+  .verdict-banner .vline { padding: 20px 28px; color: #cabfae; font-size: 15px; line-height: 1.6; }
+  .feedback-card { margin-top: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+  .feedback-card .fh { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .feedback-card .fh .av { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-accent); display: grid; place-items: center; font-family: var(--serif); font-size: 13px; }
+  .feedback-card .fh .nm { font-weight: 600; font-size: 14px; }
+  .feedback-card .fh .rl { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); }
+  .fb-item { display: grid; grid-template-columns: 70px 1fr; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.5; }
+  .fb-item .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding-top: 2px; }
+  .fb-item.good .k { color: #2f6b46; } .fb-item.fix .k { color: #6f2c2c; }
+  .verdict-actions { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+const CHARS = {
+  clerk:    { nm: "Court Clerk", rl: "Clerk", av: "clerk", glyph: "K", color: "#4a4533" },
+  judge:    { nm: "Justice of the Peace", rl: "The Bench", av: "judge", glyph: "J", color: "#25324a" },
+  crown:    { nm: "Crown Prosecutor", rl: "Crown", av: "crown", glyph: "P", color: "#6f2c2c" },
+  me:       { nm: "You", rl: "Defendant", av: "me", glyph: "Y", color: "#1a1916" },
+  prosecuto:{ nm: "Prosecuto", rl: "Review", av: "alex", glyph: "✦", color: "#1a1916" }
+};
+
+/* tendered exhibits */
+const DOCS = {
+  certificate: {
+    title: "Certificate of Offence", sub: "Exhibit 1 · tendered by the Crown",
+    render: () => (
+      <div className="legal-doc">
+        <div className="lh"><span>Provincial Offences Act</span><span>Exhibit 1</span></div>
+        <h2>Certificate of Offence</h2>
+        <div className="sec-no">Red light camera · HTA s.144</div>
+        <p>Plate number: <span className="fill">[plate]</span><br/>Date of offence: <span className="fill">[date]</span><br/>Location: <span className="fill">[intersection]</span><br/>Issuing officer / badge no.: <span className="fill">[badge]</span></p>
+        <p>The provincial offences officer certifies that they have reasonable and probable grounds to believe, and do believe, that the offence was committed.</p>
+        <p style={{color:'var(--muted)',fontSize:'14px'}}>Defence note: examine for defects — a missing badge number, wrong date, or mismatched plate can defeat the certificate (Ground 6).</p>
+      </div>
+    )
+  },
+  photo: {
+    title: "Photograph — camera capture", sub: "Exhibit 2 · tendered by the Crown",
+    render: () => (
+      <div className="legal-doc">
+        <div className="lh"><span>Camera system</span><span>Exhibit 2</span></div>
+        <h2>Photographic Evidence</h2>
+        <div className="sec-no">Intersection capture · two frames</div>
+        <div className="placeholder-stripes" style={{aspectRatio:'4/3',borderRadius:'8px',border:'1px solid var(--line-2)',display:'grid',placeItems:'center',marginBottom:'16px'}}>
+          <code style={{fontFamily:'var(--mono)',fontSize:'12px',color:'var(--muted)'}}>[ camera capture — intersection &amp; plate ]</code>
+        </div>
+        <p style={{color:'var(--muted)',fontSize:'14px'}}>Defence note: does the image clearly identify the plate and the driver? Owner liability means the photo need not show the driver's face — but plate clarity is fair game (Ground 4).</p>
+      </div>
+    )
+  },
+  camcert: {
+    title: "Camera Operating Certificate", sub: "Exhibit 3 · tendered by the Crown",
+    render: () => (
+      <div className="legal-doc">
+        <div className="lh"><span>Equipment record</span><span>Exhibit 3</span></div>
+        <h2>Camera Operating Certificate</h2>
+        <div className="sec-no">Calibration &amp; maintenance</div>
+        <p>This certifies that the red light camera system at the location was tested and operating accurately at the material time.</p>
+        <p>Last calibration: <span className="fill">[date]</span><br/>Amber phase duration: <span className="fill">[seconds]</span><br/>Maintenance on record: <span className="fill">[yes / no]</span></p>
+        <p style={{color:'var(--muted)',fontSize:'14px'}}>Defence note: request the full calibration and maintenance records in disclosure. Gaps support Ground 2 (malfunction); a short amber phase supports Ground 5.</p>
+      </div>
+    )
+  }
+};
+
+/* ---- the trial state machine ---- */
+const PHASES = [
+  { rail:"Call to order", who:"clerk", mode:"auto",
+    text:"All rise. The Ontario Court of Justice, Provincial Offences Court, is now in session. You may be seated. We are here on the matter of the City versus the defendant — one count under the Highway Traffic Act, section 144, red light camera." },
+  { rail:"Affirmation", mode:"user", cue:{ who:"clerk", text:"Do you affirm that the evidence you give to this court will be the truth, the whole truth, and nothing but the truth?" },
+    suggest:["I do solemnly affirm.","I affirm."] },
+  { rail:"Court opens", who:"judge", mode:"auto",
+    text:"Thank you. I am the Justice of the Peace hearing this matter. The standard of proof is beyond a reasonable doubt, and the burden rests with the Crown throughout. Madam Prosecutor, you may open." },
+  { rail:"Crown opening", who:"crown", mode:"auto",
+    text:"Thank you, Your Worship. The Crown will show that on the date in question, the vehicle registered to the defendant entered the intersection against a red signal, captured by an approved red light camera system. The evidence is a certificate of offence, a photograph, and the camera operating certificate." },
+  { rail:"Defence opening", mode:"user", cue:{ who:"judge", text:"The defence may now make its opening statement." },
+    suggest:["I'm the registered owner, but I was not the driver.","I'll rely on a statutory declaration naming the driver.","I dispute that the plate is clearly identified."] },
+  { rail:"Crown's case", who:"crown", mode:"auto",
+    text:"The Crown tenders three exhibits, Your Worship: the Certificate of Offence as Exhibit 1, the photographic capture as Exhibit 2, and the Camera Operating Certificate as Exhibit 3. The Crown's case rests on the certificate and the operating record.",
+    docs:["certificate","photo","camcert"] },
+  { rail:"Cross Crown", mode:"user", cue:{ who:"judge", text:"You may cross-examine on the Crown's evidence." },
+    suggest:["Was the camera's calibration record disclosed to me?","Does the photograph clearly identify the driver?","When was the equipment last serviced?"],
+    reply:{ who:"crown", text:"The operating certificate is tendered, Your Worship; the full underlying calibration log was not included in the disclosure package. As to the driver — this is an owner-liability offence; the Crown does not allege a specific driver." } },
+  { rail:"Defence case", mode:"user", cue:{ who:"judge", text:"The defence may now present its case." },
+    suggest:["I tender a statutory declaration — I was not the driver.","The Crown failed to disclose the calibration records.","There was no proper advance signage at the intersection."] },
+  { rail:"Cross defence", mode:"user", cue:{ who:"crown", text:"Just one question. You acknowledge that you are the registered owner of the vehicle, correct?" },
+    suggest:["Yes — but ownership is not driving, and a declaration names the driver.","I own it, yes. I was not behind the wheel."],
+    reply:{ who:"crown", text:"No further questions, Your Worship." } },
+  { rail:"Crown closing", who:"crown", mode:"auto",
+    text:"In closing, the Crown's evidence establishes the offence on an owner-liability basis. The Crown acknowledges, however, that the full calibration log was not disclosed. The Crown submits the certificate alone is sufficient and leaves the matter to Your Worship." },
+  { rail:"Defence closing", mode:"user", cue:{ who:"judge", text:"And finally, the defence may close." },
+    suggest:["The Crown's own admission of non-disclosure leaves reasonable doubt.","The driver was never established, and the declaration stands unchallenged.","I respectfully ask that the charge be dismissed."] },
+  { rail:"Verdict", who:"judge", mode:"verdict",
+    text:"I've heard both sides. Having considered the evidence and the Crown's admission regarding disclosure, I find as follows." }
+];
+
+const VERDICT = {
+  result: "NOT GUILTY",
+  line: "The Crown bears the burden beyond a reasonable doubt. The defence tendered an unchallenged statutory declaration, and the Crown conceded the calibration log was not disclosed. On this record, the court is left with a reasonable doubt. The charge is dismissed.",
+  feedback: [
+    { k: "Strong", cls: "good", t: "You raised the disclosure gap early and made the Crown concede it on the record — that's what created the doubt." },
+    { k: "Strong", cls: "good", t: "Tendering the statutory declaration cleanly, without over-explaining, kept the driver's identity unproven." },
+    { k: "Fix", cls: "fix", t: "On cross, you volunteered ownership a little fast. Answer only what's asked — \u201cYes\u201d was enough before adding the qualifier." },
+    { k: "Fix", cls: "fix", t: "You addressed the bench as \u201cYour Honour\u201d once. In Provincial Offences Court it's \u201cYour Worship.\u201d Small thing, but it signals preparation." }
+  ]
+};
+
+function App() {
+  const [messages, setMessages] = useState([]);
+  const [cur, setCur] = useState(-1);
+  const [suggest, setSuggest] = useState([]);
+  const [input, setInput] = useState("");
+  const [speaking, setSpeaking] = useState(false);
+  const [active, setActive] = useState("clerk");
+  const [caption, setCaption] = useState({ who:"clerk", text:"", show:false });
+  const [thinking, setThinking] = useState(false);
+  const [tab, setTab] = useState("chat");
+  const [openDoc, setOpenDoc] = useState(null);
+  const [mic, setMic] = useState(false);
+  const [ended, setEnded] = useState(false);
+  const tRef = useRef(null);
+  const capTimer = useRef(null);
+
+  const sharedDocs = messages.filter(m => m.doc).map(m => m.doc);
+
+  const scrollDown = useCallback(() => {
+    requestAnimationFrame(() => { const el = tRef.current; if (el) el.scrollTop = el.scrollHeight; });
+  }, []);
+
+  const speak = useCallback((who, text, after) => {
+    clearInterval(capTimer.current);
+    setActive(who);
+    setSpeaking(true);
+    setCaption({ who, text: "", show: true });
+    const words = text.split(" "); let i = 0;
+    capTimer.current = setInterval(() => {
+      i++;
+      setCaption({ who, text: words.slice(0, i).join(" "), show: true });
+      if (i >= words.length) {
+        clearInterval(capTimer.current);
+        setTimeout(() => { setSpeaking(false); after && after(); }, 650);
+      }
+    }, 48);
+  }, []);
+
+  // play an auto/verdict/cue line (a character speaks), then callback
+  const charSpeak = useCallback((who, text, docs, after) => {
+    setSuggest([]); setThinking(true); scrollDown();
+    setTimeout(() => {
+      setThinking(false);
+      setMessages(m => [...m, { role: who, text, doc: null }]);
+      if (docs) docs.forEach((d, k) => setTimeout(() => {
+        setMessages(m => [...m, { role: who, text: null, doc: d }]); scrollDown();
+      }, 500 + k * 450));
+      speak(who, text, after);
+      scrollDown();
+    }, 800);
+  }, [speak, scrollDown]);
+
+  const arrive = useCallback((i) => {
+    const p = PHASES[i];
+    if (!p) return;
+    setCur(i);
+    if (p.mode === "auto") {
+      charSpeak(p.who, p.text, p.docs, () => setTimeout(() => arrive(i + 1), 700));
+    } else if (p.mode === "verdict") {
+      charSpeak(p.who, p.text, null, () => setTimeout(() => setEnded(true), 600));
+    } else { // user
+      charSpeak(p.cue.who, p.cue.text, null, () => setSuggest(p.suggest || []));
+    }
+  }, [charSpeak]);
+
+  useEffect(() => { const t = setTimeout(() => arrive(0), 700); return () => clearTimeout(t); }, [arrive]);
+  useEffect(scrollDown, [messages, thinking, ended]);
+
+  const send = (text) => {
+    const val = (text ?? input).trim();
+    if (!val || thinking) return;
+    const p = PHASES[cur];
+    if (!p || p.mode !== "user") return;
+    clearInterval(capTimer.current); setSpeaking(false);
+    setMessages(m => [...m, { role: "me", text: val }]);
+    setInput(""); setSuggest([]); setMic(false);
+    setTimeout(() => {
+      if (p.reply) charSpeak(p.reply.who, p.reply.text, null, () => setTimeout(() => arrive(cur + 1), 600));
+      else arrive(cur + 1);
+    }, 550);
+  };
+
+  const onChip = (c) => send(c);
+
+  const restart = () => {
+    setMessages([]); setCur(-1); setSuggest([]); setEnded(false);
+    setCaption({ who:"clerk", text:"", show:false }); setActive("clerk");
+    setTimeout(() => arrive(0), 500);
+  };
+
+  const aMeta = CHARS[active];
+
+  return (
+    <div className="room">
+      {/* LEFT — active speaker stage */}
+      <div className={"stage" + (speaking ? " speaking" : "")}>
+        <div className="stage-top">
+          <a className="back-link" href="index.html">← Prosecuto</a>
+          <span className="mode-pill">Judge Mode · Mock trial</span>
+        </div>
+
+        <div className="avatar-slot">
+          <div className="ring" style={{borderColor: aMeta.color + "55"}}>
+            <span className="avatar-glyph" style={{color: aMeta.color}}>{aMeta.glyph}</span>
+          </div>
+          <div style={{textAlign:'center'}}>
+            <div className="who-name serif">{aMeta.nm}</div>
+            <div className="who-role">{aMeta.rl} · now speaking</div>
+          </div>
+          <code>3D avatar mounts here — swaps per active character</code>
+        </div>
+
+        <div className="caption">
+          <div className={"caption-inner" + (caption.show ? " show" : "")}>
+            <span className="spk">{CHARS[caption.who]?.nm}
+              <span className="wave"><i></i><i></i><i></i><i></i><i></i></span>
+            </span>
+            {caption.text || "…"}
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT — courtroom transcript */}
+      <div className="panel">
+        <div className="panel-head">
+          <div>
+            <h1 className="serif">Provincial Offences Court</h1>
+            <div className="sub">City v. Defendant · HTA s.144</div>
+          </div>
+          <div className="head-tabs">
+            <button className={tab==="chat"?"active":""} onClick={()=>setTab("chat")}>Transcript</button>
+            <button className={tab==="docs"?"active":""} onClick={()=>setTab("docs")}>Evidence <span className="badge">{sharedDocs.length}</span></button>
+          </div>
+        </div>
+
+        {/* phase rail */}
+        <div className="rail">
+          {PHASES.map((p, i) => (
+            <div key={i} className={"ph" + (i===cur && !ended ? " cur" : "") + (i<cur || ended ? " done" : "")}>
+              <span className="dot">{i<cur || ended ? "✓" : i+1}</span>
+              <span className="lb">{p.rail}</span>
+            </div>
+          ))}
+        </div>
+
+        {tab === "chat" ? (
+          <div className="transcript" ref={tRef}>
+            {messages.map((m, i) => {
+              const meta = CHARS[m.role];
+              if (m.doc) {
+                return (
+                  <div key={i} className={"turn"} style={{maxWidth:'78%'}}>
+                    <div className="doc-card" style={{marginTop:0}} onClick={()=>setOpenDoc(m.doc)}>
+                      <div className="dc-top">
+                        <div className="dc-ico"></div>
+                        <div><div className="dc-t">{DOCS[m.doc].title}</div><div className="dc-s">{DOCS[m.doc].sub}</div></div>
+                        <div className="dc-open">Open →</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div key={i} className={"turn" + (m.role==="me" ? " me" : "")}>
+                  <div className="meta">
+                    <span className={"av " + meta.av}>{meta.glyph}</span>
+                    <span className="nm">{meta.nm}</span><span className="rl">{meta.rl}</span>
+                  </div>
+                  <div className="body">{m.text}</div>
+                </div>
+              );
+            })}
+            {thinking && (
+              <div className="turn">
+                <div className="meta"><span className={"av " + CHARS[active].av}>{CHARS[active].glyph}</span><span className="nm">{CHARS[active].nm}</span></div>
+                <div className="body"><span className="thinking"><i></i><i></i><i></i></span></div>
+              </div>
+            )}
+
+            {ended && (
+              <div className="verdict-wrap">
+                <div className="verdict-banner">
+                  <div className="vb-top">
+                    <div className="vlabel">The court finds the defendant</div>
+                    <div className="vresult serif">{VERDICT.result}</div>
+                  </div>
+                  <div className="vline">{VERDICT.line}</div>
+                </div>
+                <div className="feedback-card">
+                  <div className="fh">
+                    <span className="av">✦</span><span className="nm">Prosecuto</span>
+                    <span className="rl">Breaking character · performance review</span>
+                  </div>
+                  {VERDICT.feedback.map((f, i) => (
+                    <div key={i} className={"fb-item " + f.cls}><span className="k">{f.k}</span><span>{f.t}</span></div>
+                  ))}
+                  <div className="verdict-actions">
+                    <button className="btn btn-primary" onClick={restart}>Run it again</button>
+                    <a className="btn btn-ghost" href="lawyer.html">Back to prep with Alex</a>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="transcript" ref={tRef}>
+            {sharedDocs.length === 0 && <p style={{color:'var(--muted)',fontFamily:'var(--mono)',fontSize:'13px'}}>No exhibits tendered yet.</p>}
+            {sharedDocs.map((d, i) => (
+              <div className="doc-card" key={i} style={{marginBottom:'14px'}} onClick={()=>setOpenDoc(d)}>
+                <div className="dc-top"><div className="dc-ico"></div>
+                  <div><div className="dc-t">{DOCS[d].title}</div><div className="dc-s">{DOCS[d].sub}</div></div>
+                  <div className="dc-open">Open →</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* composer */}
+        <div className="composer">
+          {suggest.length > 0 && (
+            <div className="suggest">{suggest.map((s,i)=><button key={i} className="chip" onClick={()=>onChip(s)}>{s}</button>)}</div>
+          )}
+          <div className="input-row">
+            <textarea rows="1"
+              placeholder={ended ? "The trial has concluded." : (PHASES[cur] && PHASES[cur].mode === "user" ? "Address the court… (it's your turn)" : "Listening to the court…")}
+              value={input} onChange={e=>setInput(e.target.value)}
+              onKeyDown={e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); } }} />
+            <button className={"icon-btn mic" + (mic ? " live" : "")} onClick={()=>setMic(v=>!v)} title="Voice input">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg>
+            </button>
+            <button className="icon-btn send-btn" disabled={!input.trim()} onClick={()=>send()} title="Send">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        {/* document viewer */}
+        <div className={"docview" + (openDoc ? " open" : "")}>
+          <div className="scrim" onClick={()=>setOpenDoc(null)}></div>
+          <div className="sheet">
+            {openDoc && (
+              <React.Fragment>
+                <div className="sheet-head">
+                  <div><div className="st">{DOCS[openDoc].title}</div><div className="ss">{DOCS[openDoc].sub}</div></div>
+                  <button className="icon-btn" onClick={()=>setOpenDoc(null)} title="Close">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                  </button>
+                </div>
+                <div className="sheet-body">{DOCS[openDoc].render()}</div>
+              </React.Fragment>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
