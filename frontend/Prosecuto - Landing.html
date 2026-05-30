@@ -166,31 +166,6 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
   .hero-meta .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ink); }
   .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
 
-  /* video slot */
-  .video-slot {
-    position: relative; width: 100%; aspect-ratio: 16/9;
-    border-radius: 8px; overflow: hidden; border: 1px solid var(--line-2);
-    margin-top: 30px;
-  }
-  .video-slot video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .video-ph {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px; text-align: center;
-  }
-  .video-ph .play {
-    width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid var(--ink);
-    display: grid; place-items: center;
-  }
-  .video-ph .play::before { content: ""; border-left: 15px solid var(--ink); border-top: 9px solid transparent; border-bottom: 9px solid transparent; margin-left: 4px; }
-  .video-ph code { font-family: var(--mono); font-size: 12.5px; color: var(--muted); letter-spacing: 0.02em; }
-  .video-ph .label { font-family: var(--serif); font-size: 21px; color: var(--ink); font-style: italic; }
-  .video-badge {
-    position: absolute; top: 16px; left: 16px; z-index: 3;
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-    background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(6px);
-    padding: 6px 11px; border-radius: 100px; border: 1px solid var(--line);
-  }
-
   /* ---------- SECTIONS ---------- */
   section { scroll-margin-top: 90px; }
   .sec { padding-block: 86px; }
@@ -331,11 +306,6 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
   <a class="brand" href="#top"><span class="mark"></span>Prosecuto</a>
   <div class="nav-links">
     <a href="#story">Story</a>
-    <a href="#overview">Overview</a>
-    <a href="#paths">Dispute paths</a>
-    <a href="#lawyer">Lawyer Mode</a>
-    <a href="#judge">Judge Mode</a>
-    <a href="#grounds">Defence grounds</a>
   </div>
   <div class="nav-cta">
     <a class="btn btn-ghost" href="Lawyer - Alex.html">Prepare my case</a>
@@ -353,22 +323,6 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
       <div class="hero-actions reveal" style="transition-delay:.1s">
         <a class="btn btn-primary" href="Judge - Mock Trial.html">Run mock trial <span class="arrow">→</span></a>
         <a class="btn btn-ghost" href="#story">Read the story</a>
-      </div>
-    </div>
-
-    <!-- VIDEO SLOT — to go live, drop your file at assets/header.mp4 and
-         uncomment the <video> below (or set data-src on .video-slot). -->
-    <div class="video-slot placeholder-stripes reveal" id="videoSlot" data-src="assets/header.mp4" style="transition-delay:.1s">
-      <span class="video-badge">Demo</span>
-      <!--
-      <video autoplay muted loop playsinline>
-        <source src="assets/header.mp4" type="video/mp4">
-      </video>
-      -->
-      <div class="video-ph">
-        <div class="play"></div>
-        <div class="label">Product demo</div>
-        <code>drop your video at&nbsp; assets/header.mp4</code>
       </div>
     </div>
   </div>
@@ -464,182 +418,6 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
     </div>
   </div>
 </div>
-
-<!-- After comics — dedicated CTA beat -->
-<section class="comic-finale site-section" id="comic-finale">
-  <div class="wrap comic-finale__inner">
-    <p class="comic-finale__eyebrow">The story continues</p>
-    <h2 class="comic-finale__title">Ready to write your ending?</h2>
-    <p class="comic-finale__lede">You have seen the ticket, the fine, and the win. Now build your real defence with Prosecuto.</p>
-    <div class="comic-finale__actions">
-      <a class="btn btn-primary" href="Lawyer - Alex.html">Prepare my case <span class="arrow">→</span></a>
-      <a class="btn btn-ghost" href="#overview">How it works</a>
-    </div>
-  </div>
-</section>
-
-<!-- 1 · OVERVIEW STATEMENT -->
-<section id="overview" class="statement site-section">
-  <div class="wrap">
-    <p class="reveal"><span class="index">01 / Overview&nbsp;&nbsp;&nbsp;</span><br><br>A red light camera ticket is <b>owner liability</b> — no points, no suspension. Prosecuto turns that quiet advantage into a real defence: <span class="by">it interviews you, finds your grounds, and rehearses you until you can hold your own in court.</span></p>
-  </div>
-</section>
-
-<!-- 2 · TWO PATHS -->
-<section id="paths" class="sec wrap site-section">
-  <div class="sec-head">
-    <h2 class="reveal"><span class="index">02 / Two ways<br></span>Two paths to dispute</h2>
-    <p class="reveal" style="transition-delay:.05s">Every ticket can be challenged two ways. Prosecuto knows the difference and prepares you for the one you choose — or both.</p>
-  </div>
-  <div class="paths">
-    <div class="path-card reveal">
-      <span class="tag">Path A</span>
-      <h3 class="serif">Early Resolution</h3>
-      <p>You meet a prosecutor before trial to negotiate the charge. Informal, no Justice of the Peace, no oath. You speak only to the Crown.</p>
-      <ul>
-        <li>Charge withdrawn</li>
-        <li>Fine reduced</li>
-        <li>Amended to a lesser offence</li>
-      </ul>
-    </div>
-    <div class="path-card reveal" style="transition-delay:.07s">
-      <span class="tag">Path B</span>
-      <h3 class="serif">Trial</h3>
-      <p>A formal hearing before a Justice of the Peace under the Provincial Offences Act. Evidence is tendered, objections are valid, proof is beyond a reasonable doubt.</p>
-      <ul>
-        <li>Crown opens, then the defence</li>
-        <li>Examination &amp; cross-examination</li>
-        <li>Closings, then verdict</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<hr class="hairline wrap" style="border:0">
-
-<!-- 3 · LAWYER MODE -->
-<section id="lawyer" class="sec wrap site-section">
-  <div class="mode">
-    <div class="reveal">
-      <p class="eyebrow" style="margin-bottom:20px">03 / Lawyer Mode · Alex</p>
-      <h3 class="serif">A coach who builds your case with you</h3>
-      <p class="lede">Alex interviews you about the ticket, the intersection, and who was driving — then determines your defence grounds and produces a preparation package, walking you through it section by section.</p>
-      <ul class="mode-points">
-        <li><span class="n">A</span><span class="t"><b>Opening statement</b> — <span>exactly what to say to open your case.</span></span></li>
-        <li><span class="n">B</span><span class="t"><b>Defence script</b> — <span>an ordered script of what to say and when.</span></span></li>
-        <li><span class="n">C</span><span class="t"><b>Anticipated questions</b> — <span>likely asks from the Crown or JP, with answers.</span></span></li>
-        <li><span class="n">D</span><span class="t"><b>Evidence &amp; disclosure</b> — <span>what to gather and what to formally request.</span></span></li>
-        <li><span class="n">E</span><span class="t"><b>Delivery coaching</b> — <span>tone, pacing, and the correct form of address.</span></span></li>
-      </ul>
-      <div class="hero-actions" style="margin-top:30px">
-        <a class="btn btn-primary" href="Lawyer - Alex.html">Prepare my case <span class="arrow">→</span></a>
-      </div>
-    </div>
-    <div class="mode-visual reveal" style="transition-delay:.06s">
-      <p class="eyebrow" style="margin-bottom:18px; color:var(--muted-2)">Preparation package</p>
-      <div class="machine machine--package">
-        <div class="step"><span class="ph">[ OPENING_STATEMENT ]</span><span class="nm">What to open with</span></div>
-        <div class="step"><span class="ph">[ DEFENCE_SCRIPT ]</span><span class="nm">Say this, then this</span></div>
-        <div class="step"><span class="ph">[ ANTICIPATED_Q ]</span><span class="nm">Q&nbsp;&amp;&nbsp;A pairs</span></div>
-        <div class="step"><span class="ph">[ EVIDENCE_CHECK ]</span><span class="nm">Bring these</span></div>
-        <div class="step"><span class="ph">[ DISCLOSURE ]</span><span class="nm">Request these</span></div>
-        <div class="step"><span class="ph">[ DELIVERY ]</span><span class="nm">How to carry it</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="hairline wrap" style="border:0">
-
-<!-- 4 · JUDGE MODE -->
-<section id="judge" class="sec wrap site-section">
-  <div class="mode flip">
-    <div class="mode-visual reveal">
-      <p class="eyebrow" style="margin-bottom:18px; color:var(--muted-2)">Trial state machine</p>
-      <div class="machine machine--trial">
-        <div class="step"><span class="ph">01</span><span class="nm">Call to order</span><span class="who">Clerk</span></div>
-        <div class="step"><span class="ph">02</span><span class="nm">Oath / affirmation</span><span class="who">Clerk</span></div>
-        <div class="step"><span class="ph">03</span><span class="nm">Crown opening</span><span class="who">Crown</span></div>
-        <div class="step user"><span class="ph">04</span><span class="nm">Defence opening</span><span class="who">You</span></div>
-        <div class="step"><span class="ph">05</span><span class="nm">Crown's case</span><span class="who">Crown</span></div>
-        <div class="step user"><span class="ph">06</span><span class="nm">Cross-examine Crown</span><span class="who">You</span></div>
-        <div class="step user"><span class="ph">07</span><span class="nm">Defence case</span><span class="who">You</span></div>
-        <div class="step"><span class="ph">08</span><span class="nm">Closings → Verdict</span><span class="who">JP</span></div>
-      </div>
-    </div>
-    <div class="reveal" style="transition-delay:.06s">
-      <p class="eyebrow" style="margin-bottom:20px">04 / Judge Mode · Mock trial</p>
-      <h3 class="serif">Rehearse the whole trial before it's real</h3>
-      <p class="lede">A Justice of the Peace, a Crown prosecutor, and a court clerk run the full Provincial Offences Court sequence — strictly, in order. You speak your part. At the verdict, the AI breaks character and reviews your performance.</p>
-      <ul class="mode-points">
-        <li><span class="n">★</span><span class="t"><b>Procedurally exact</b> — <span>the JP enforces the sequence and rules on objections.</span></span></li>
-        <li><span class="n">★</span><span class="t"><b>Real evidence package</b> — <span>Certificate of Offence, photograph, camera operating certificate.</span></span></li>
-        <li><span class="n">★</span><span class="t"><b>Honest feedback</b> — <span>specific moments from the transcript, what to fix.</span></span></li>
-      </ul>
-      <div class="hero-actions" style="margin-top:30px">
-        <a class="btn btn-primary" href="Judge - Mock Trial.html">Run mock trial <span class="arrow">→</span></a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 5 · DEFENCE GROUNDS -->
-<section id="grounds" class="sec wrap site-section">
-  <div class="sec-head">
-    <h2 class="reveal"><span class="index">05 / The case<br></span>Seven defence grounds</h2>
-    <p class="reveal" style="transition-delay:.05s">These are the only grounds Prosecuto works with — each tied to a specific document or piece of evidence. No invented theories.</p>
-  </div>
-  <div class="grounds">
-    <div class="ground reveal"><span class="gn">01</span><span class="gt serif">Owner was not the driver</span><span class="gd">Statutory Declaration naming the actual driver.</span></div>
-    <div class="ground reveal"><span class="gn">02</span><span class="gt serif">Camera or equipment malfunction</span><span class="gd">Disclosure of calibration and maintenance records.</span></div>
-    <div class="ground reveal"><span class="gn">03</span><span class="gt serif">Improper or missing signage</span><span class="gd">Photograph of the intersection and the municipal by-law.</span></div>
-    <div class="ground reveal"><span class="gn">04</span><span class="gt serif">Plate misidentification</span><span class="gd">Certificate photo does not clearly match the plate.</span></div>
-    <div class="ground reveal"><span class="gn">05</span><span class="gt serif">Amber timing violation</span><span class="gd">Technical evidence of the amber phase duration.</span></div>
-    <div class="ground reveal"><span class="gn">06</span><span class="gt serif">Certificate of Offence defect</span><span class="gd">Missing or wrong badge number, date, or plate.</span></div>
-    <div class="ground reveal"><span class="gn">07</span><span class="gt serif">s.11(b) Charter — unreasonable delay</span><span class="gd">Trial date more than 18 months from the charge date.</span></div>
-  </div>
-
-  <div class="facts">
-    <div class="fact reveal"><div class="fv">$260–325</div><div class="fl">Typical fine range</div></div>
-    <div class="fact reveal" style="transition-delay:.05s"><div class="fv">0</div><div class="fl">Demerit points, ever</div></div>
-    <div class="fact reveal" style="transition-delay:.1s"><div class="fv">“Your Worship”</div><div class="fl">How you address the JP</div></div>
-    <div class="fact reveal" style="transition-delay:.15s"><div class="fv">Beyond doubt</div><div class="fl">The Crown's burden of proof</div></div>
-  </div>
-</section>
-
-<!-- CLOSING CTA -->
-<section class="cta" id="start">
-  <div class="wrap">
-    <p class="eyebrow reveal">Ready when you are</p>
-    <h2 class="reveal serif" style="margin-top:18px">Pick your mode and begin.</h2>
-    <p class="reveal">Start with preparation, or jump straight into a mock trial. You can run both as many times as you need.</p>
-    <div class="cta-cards">
-      <a class="cta-card reveal" href="Lawyer - Alex.html">
-        <span class="ci">Demo · Lawyer Mode</span>
-        <h3 class="serif">Prepare my case</h3>
-        <span class="cd">Sit down with Alex. Answer a few questions and walk out with a full defence package built around your ticket.</span>
-        <span class="go">Meet Alex <span class="arrow">→</span></span>
-      </a>
-      <a class="cta-card reveal" href="Judge - Mock Trial.html" style="transition-delay:.06s">
-        <span class="ci">Simulator · Judge Mode</span>
-        <h3 class="serif">Run mock trial</h3>
-        <span class="cd">Face the Justice of the Peace and the Crown in a full Provincial Offences Court simulation — then get your verdict and review.</span>
-        <span class="go">Enter the courtroom <span class="arrow">→</span></span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer class="wrap">
-  <div class="foot-grid">
-    <div>
-      <div class="foot-brand"><span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:var(--ink);margin-right:8px;vertical-align:baseline"></span>Prosecuto</div>
-      <p class="disclaimer">Ontario only · HTA s.144 · Provincial Offences Act</p>
-    </div>
-    <p class="foot-note">Prosecuto is a preparation tool, not a law firm. It does not provide legal advice and is not a substitute for a paralegal or lawyer. When in doubt, verify with a licensed paralegal or your local courthouse. Built for the NVIDIA Hackathon, 2026.</p>
-  </div>
-</footer>
 
 </main>
 
