@@ -1,0 +1,52 @@
+/* ---------- NAV ---------- */
+.nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px var(--pad);
+  background: rgba(255, 249, 237, 0.96);
+  backdrop-filter: blur(12px) saturate(1.1);
+  border-bottom: 3px solid var(--ink);
+  box-shadow: 0 2px 16px rgba(20, 20, 20, 0.08);
+  transition: background .3s ease, box-shadow .3s ease;
+}
+.nav.solid {
+  background: rgba(255, 249, 237, 0.98);
+  box-shadow: 0 4px 20px rgba(20, 20, 20, 0.1);
+}
+.brand {
+  display: flex; align-items: center; gap: 11px;
+  font-family: var(--serif); font-size: 28px; font-weight: 400;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink);
+}
+.brand .mark {
+  width: 26px; height: 26px; border-radius: 6px;
+  background: var(--accent); border: 2px solid var(--ink); position: relative; flex: none;
+}
+.brand .mark::after {
+  content: ""; position: absolute; inset: 8px 8px auto 8px; height: 2px;
+  background: var(--on-accent); box-shadow: 0 4px 0 var(--on-accent), 0 8px 0 var(--on-accent);
+}
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a {
+  font-family: var(--sans); font-size: 15px; font-weight: 700;
+  color: var(--ink); transition: color .2s;
+}
+.nav-links a:hover { color: var(--accent); }
+.nav-cta { display: flex; align-items: center; gap: 12px; }
+@media (max-width: 860px){ .nav-links { display: none; } }
+
+/* ---------- HERO ---------- */
+.hero { padding-block: 168px 56px; }
+.hero-grid { display: grid; gap: 40px; }
+.hero h1 {
+  font-size: clamp(46px, 7.2vw, 104px);
+  line-height: 0.98; letter-spacing: -0.03em; font-weight: 400;
+  max-width: 16ch; text-wrap: balance;
+}
+.hero h1 em { font-style: normal; color: var(--accent-red); }
+.hero-sub {
+  max-width: 52ch; font-size: clamp(17px, 1.5vw, 20px);
+  color: var(--muted); line-height: 1.55; margin-top: 6px;
+}
+.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }

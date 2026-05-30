@@ -1,0 +1,97 @@
+/* ============================================================
+   PROSECUTO — shared design system
+   Editorial legal-tech: warm paper, ink black, refined serif.
+   ============================================================ */
+
+:root {
+  --bg:        #EAF4FC;
+  --bg-tint:   #D4E8F7;
+  --surface:   #FFF9ED;
+  --surface-2: #FFF3D6;
+  --ink:       #141414;
+  --muted:     #3D4F66;
+  --muted-2:   #5C6F85;
+  --line:      #B8C9DC;
+  --line-2:    #8FA8C4;
+  --accent:    #1E6FD9;
+  --accent-red: #E63535;
+  --comic-yellow: #FFC72C;
+  --on-accent: #FFFFFF;
+
+  --serif: var(--font-bangers), 'Bangers', Impact, sans-serif;
+  --sans:  var(--font-comic-neue), 'Comic Neue', 'Comic Sans MS', cursive;
+  --mono:  var(--font-comic-neue), 'Comic Neue', 'Comic Sans MS', cursive;
+
+  --maxw: 1240px;
+  --pad: clamp(20px, 5vw, 64px);
+  --r: 4px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+::selection { background: #1f1d1a1f; }
+a { color: inherit; text-decoration: none; }
+img, video { display: block; max-width: 100%; }
+
+/* ---- type primitives ---- */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+.serif { font-family: var(--serif); font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em; margin: 0; }
+
+/* ---- buttons ---- */
+.btn {
+  --bw: 1px;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--sans); font-size: 15px; font-weight: 500;
+  letter-spacing: 0;
+  padding: 14px 22px;
+  border-radius: 100px;
+  border: var(--bw) solid transparent;
+  cursor: pointer;
+  transition: background .25s ease, color .25s ease, border-color .25s ease, transform .15s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: var(--on-accent); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+.btn-primary:hover { background: #1558b0; }
+.btn-ghost { background: var(--surface); color: var(--ink); border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.btn-ghost:hover { background: var(--comic-yellow); border-color: var(--ink); }
+.btn .arrow { transition: transform .25s ease; }
+.btn:hover .arrow { transform: translateX(3px); }
+
+/* ---- layout helpers ---- */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--pad); }
+.hairline { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+/* reveal on scroll — visible by default (opacity 1) so content NEVER hides;
+   JS only removes a subtle offset for a gentle entrance. */
+.reveal { opacity: 1; transform: translateY(14px); transition: transform .7s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+.reveal.in { transform: none; }
+
+/* striped placeholder texture (for video / avatar slots) */
+.placeholder-stripes {
+  background-color: var(--bg-tint);
+  background-image: repeating-linear-gradient(
+    -45deg, transparent 0 11px, #1a191609 11px 12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
