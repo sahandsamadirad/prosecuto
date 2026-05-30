@@ -14,33 +14,32 @@
   --comic-green: #22C55E;
   --comic-font: 'Bangers', Impact, sans-serif;
   --comic-body: 'Comic Neue', 'Comic Sans MS', cursive;
-  --nav-clearance: 88px;
+  --nav-clearance: 72px;
   position: relative;
   background: var(--comic-night);
-  overflow: hidden;
+  isolation: isolate;
+  /* NOTE: overflow:hidden breaks position:sticky on the canvas */
 }
 
-/* Canvas + scroll track share one grid cell — no negative-margin bleed */
 .comic-stage {
-  display: grid;
-  grid-template-columns: 1fr;
+  position: relative;
 }
 
-.comic-stage > * {
-  grid-column: 1;
-  grid-row: 1;
-}
-
+/* Sticky art pinned for full scroll track (bad8824 pattern) */
 #comic-canvas-wrap {
   position: sticky;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100vh;
   height: 100dvh;
+  margin-bottom: -100vh;
+  margin-bottom: -100dvh;
   z-index: 0;
-  align-self: start;
   overflow: hidden;
   pointer-events: none;
+  transition: opacity 0.15s linear;
+  will-change: opacity;
 }
 
 #comic-canvas {
@@ -92,19 +91,26 @@
 
 #comic-scroll-track {
   position: relative;
-  z-index: 5;
+  z-index: 3;
   overflow: visible;
 }
 
+/* Equal scroll beats — one panel per image */
 .comic-panel {
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 125vh;
+  min-height: 125dvh;
   display: flex;
   padding:
-    calc(var(--nav-clearance) + 16px)
-    clamp(16px, 4vw, 48px)
-    clamp(56px, 10vh, 96px);
+    calc(var(--nav-clearance) + 8px)
+    clamp(12px, 3vw, 40px)
+    clamp(24px, 5vh, 48px);
   overflow: visible;
+  pointer-events: none;
+}
+
+.comic-panel:first-child {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .comic-panel--top {
@@ -123,31 +129,133 @@
 }
 
 .comic-panel--finale {
+  min-height: 110vh;
+}
+
+.comic-panel--image-only {
   min-height: 100vh;
   min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Solution beat — image scrolls away, blue card expands */
+.comic-panel--solution {
+  min-height: 160vh;
+  min-height: 160dvh;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: calc(var(--nav-clearance) + 24px);
 }
 
 .comic-bubble-wrap {
-  width: min(100%, 440px);
+  width: min(100%, 400px);
   opacity: 0;
-  transform: translateY(32px) scale(0.97);
+  transform: translateY(24px) scale(0.97);
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: visible;
-  will-change: transform, opacity;
+  pointer-events: auto;
+  will-change: opacity, transform;
 }
 
 .comic-bubble-wrap.visible {
-  animation: bubble-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
 
-@keyframes bubble-pop {
-  from {
-    opacity: 0;
-    transform: translateY(32px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* Panel 6 solution — blue card grows with scroll */
+.comic-bubble-wrap--solution {
+  width: min(calc(380px + var(--solution-grow, 0) * 420px), 94vw);
+  max-width: 920px;
+  margin-inline: auto;
+  transform: translateY(calc(40px - var(--solution-grow, 0) * 40px)) scale(calc(0.82 + var(--solution-grow, 0) * 0.18));
+  transition: opacity 0.35s ease;
+}
+
+.comic-bubble-wrap--solution.visible {
+  transform: translateY(calc(20px - var(--solution-grow, 0) * 20px)) scale(calc(0.88 + var(--solution-grow, 0) * 0.12));
+}
+
+.comic-bubble-wrap--solution .comic-bubble {
+  background: linear-gradient(155deg, var(--comic-blue) 0%, #1558b0 100%);
+  color: #fff;
+  border-color: var(--comic-ink);
+  box-shadow: 8px 8px 0 var(--comic-ink);
+  padding:
+    calc(22px + var(--solution-grow, 0) * 28px)
+    calc(24px + var(--solution-grow, 0) * 36px);
+}
+
+.comic-bubble-wrap--solution .comic-bubble::after,
+.comic-bubble-wrap--solution .comic-bubble::before {
+  display: none;
+}
+
+.comic-bubble-wrap--solution .comic-chapter {
+  color: var(--comic-yellow);
+}
+
+.comic-bubble-wrap--solution .comic-title--fx {
+  color: var(--comic-yellow);
+  text-shadow: 3px 3px 0 var(--comic-ink);
+}
+
+.comic-bubble-wrap--solution .comic-bubble p,
+.comic-bubble-wrap--solution .comic-solution-lede,
+.comic-bubble-wrap--solution .comic-solution-body {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.comic-solution-lede {
+  font-family: var(--comic-font);
+  font-size: clamp(22px, 4vw, 30px);
+  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+}
+
+.comic-solution-body {
+  font-size: clamp(16px, 2.2vw, 19px);
+  line-height: 1.55;
+  margin: 0 0 22px;
+  opacity: calc(0.7 + var(--solution-grow, 0) * 0.3);
+}
+
+.comic-solution-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.comic-solution-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 22px;
+  font-family: var(--comic-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--comic-ink);
+  background: var(--comic-yellow);
+  border: 3px solid var(--comic-ink);
+  border-radius: 100px;
+  text-decoration: none;
+  box-shadow: 4px 4px 0 var(--comic-ink);
+  transition: transform 0.2s ease;
+}
+
+.comic-solution-btn:hover {
+  transform: translateY(-2px);
+}
+
+.comic-solution-btn--ghost {
+  background: transparent;
+  color: #fff;
+  border-color: #fff;
+  box-shadow: none;
 }
 
 .comic-bubble {
@@ -441,10 +549,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .comic-bubble-wrap.visible {
-    animation: none;
+  .comic-bubble-wrap,
+  .comic-bubble-wrap.visible,
+  .comic-bubble-wrap--solution {
+    transition: none;
     opacity: 1;
     transform: none;
+  }
+  #comic-canvas-wrap {
+    transition: none;
   }
   .comic-scroll-hint {
     animation: none;

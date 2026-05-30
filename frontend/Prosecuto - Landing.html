@@ -394,7 +394,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
 
     <div id="comic-scroll-track">
     <article class="comic-panel comic-panel--top" data-panel="0">
-      <div class="comic-bubble-wrap comic-bubble-wrap--left visible">
+      <div class="comic-bubble-wrap comic-bubble-wrap--left">
         <div class="comic-bubble">
           <p class="comic-chapter">Panel 01</p>
           <p class="comic-quote">"Yeah! I'm flying!"</p>
@@ -443,12 +443,21 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
       </div>
     </article>
 
-    <article class="comic-panel comic-panel--center comic-panel--finale" data-panel="5">
-      <div class="comic-bubble-wrap comic-bubble-wrap--center">
+    <article class="comic-panel comic-panel--image-only" data-panel="5">
+      <!-- Image 6 only — no caption while this panel is active -->
+    </article>
+
+    <article class="comic-panel comic-panel--solution" data-panel="6">
+      <div class="comic-bubble-wrap comic-bubble-wrap--solution comic-bubble-wrap--center">
         <div class="comic-bubble">
-          <p class="comic-chapter">Panel 06</p>
+          <p class="comic-chapter">The solution</p>
           <h3 class="comic-title comic-title--fx">Victory!</h3>
-          <p><strong>Case dismissed.</strong> You walked in prepared — because you rehearsed every beat.</p>
+          <p class="comic-solution-lede"><strong>Case dismissed.</strong> You walked in prepared — because you rehearsed every beat.</p>
+          <p class="comic-solution-body">Prosecuto coaches you through Early Resolution or a full mock trial — so you know exactly what to say before you ever set foot in court.</p>
+          <div class="comic-solution-actions">
+            <a class="comic-solution-btn" href="Lawyer - Alex.html">Prepare my case →</a>
+            <a class="comic-solution-btn comic-solution-btn--ghost" href="Judge - Mock Trial.html">Run mock trial</a>
+          </div>
         </div>
       </div>
     </article>
