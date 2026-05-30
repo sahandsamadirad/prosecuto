@@ -114,16 +114,23 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
   .nav {
     position: fixed; inset: 0 0 auto 0; z-index: 1000;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 18px var(--pad);
-    transition: background .3s ease, border-color .3s ease, backdrop-filter .3s ease;
-    border-bottom: 1px solid transparent;
+    padding: 16px var(--pad);
+    background: rgba(255, 249, 237, 0.96);
+    backdrop-filter: blur(12px) saturate(1.1);
+    border-bottom: 3px solid var(--ink);
+    box-shadow: 0 2px 16px rgba(20, 20, 20, 0.08);
+    transition: background .3s ease, box-shadow .3s ease;
   }
   .nav.solid {
-    background: color-mix(in srgb, var(--bg) 82%, transparent);
-    backdrop-filter: saturate(1.2) blur(14px);
-    border-bottom: 1px solid var(--line);
+    background: rgba(255, 249, 237, 0.98);
+    box-shadow: 0 4px 20px rgba(20, 20, 20, 0.1);
   }
-  .brand { display: flex; align-items: center; gap: 11px; font-family: var(--serif); font-size: 26px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .brand {
+    display: flex; align-items: center; gap: 11px;
+    font-family: var(--serif); font-size: 28px; font-weight: 400;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink);
+  }
   .brand .mark {
     width: 26px; height: 26px; border-radius: 6px;
     background: var(--accent); border: 2px solid var(--ink); position: relative; flex: none;
@@ -132,9 +139,12 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
     content: ""; position: absolute; inset: 8px 8px auto 8px; height: 2px;
     background: var(--on-accent); box-shadow: 0 4px 0 var(--on-accent), 0 8px 0 var(--on-accent);
   }
-  .nav-links { display: flex; align-items: center; gap: 34px; }
-  .nav-links a { font-size: 14.5px; color: var(--muted); transition: color .2s; }
-  .nav-links a:hover { color: var(--ink); }
+  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-links a {
+    font-family: var(--sans); font-size: 15px; font-weight: 700;
+    color: var(--ink); transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
   .nav-cta { display: flex; align-items: center; gap: 12px; }
   @media (max-width: 860px){ .nav-links { display: none; } }
 
@@ -192,8 +202,13 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
   .index { font-family: var(--mono); font-size: 13px; color: var(--muted-2); letter-spacing: 0.14em; }
 
   /* overview big statement */
-  .statement { padding: 96px 0; border-block: 1px solid var(--line); }
-  .statement p { font-family: var(--serif); font-size: clamp(26px, 3.6vw, 46px); line-height: 1.22; letter-spacing: -0.02em; max-width: 24ch; font-weight: 300; }
+  .site-section { position: relative; z-index: 30; background: var(--bg); }
+  .statement { padding: 96px 0; border-block: 1px solid var(--line); background: var(--bg); }
+  .statement p {
+    font-family: var(--sans); font-size: clamp(22px, 3.2vw, 38px);
+    line-height: 1.35; letter-spacing: 0; max-width: 28ch; font-weight: 700;
+    text-transform: none; color: var(--ink);
+  }
   .statement p b { font-weight: 500; font-style: italic; color: var(--ink); }
   .statement .by { color: var(--muted); }
 
@@ -227,16 +242,38 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
   .mode-points .t b { font-weight: 600; }
   .mode-points .t span { color: var(--muted); }
 
-  .mode-visual { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 26px; }
+  .mode-visual { background: var(--surface); border: 3px solid var(--ink); border-radius: 12px; padding: 26px; box-shadow: 5px 5px 0 var(--ink); }
 
-  /* state machine list (judge) */
+  /* state machine lists */
   .machine { display: flex; flex-direction: column; gap: 0; }
-  .machine .step { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 14px; padding: 11px 0; }
   .machine .step + .step { border-top: 1px solid var(--line); }
-  .machine .ph { font-family: var(--mono); font-size: 11.5px; color: var(--muted-2); letter-spacing: 0.04em; }
-  .machine .nm { font-family: var(--serif); font-size: 18px; }
-  .machine .who { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); background: var(--bg-tint); padding: 3px 8px; border-radius: 100px; justify-self: end; }
-  .machine .step.user .who { background: var(--ink); color: var(--on-accent); }
+  .machine--package .step {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+    padding: 14px 0;
+  }
+  .machine--package .ph {
+    font-family: var(--mono); font-size: 10.5px; color: var(--muted-2);
+    letter-spacing: 0.06em; line-height: 1.3; word-break: break-word;
+  }
+  .machine--package .nm {
+    font-family: var(--sans); font-size: 17px; font-weight: 700;
+    line-height: 1.3; text-transform: none; letter-spacing: 0;
+  }
+  .machine--trial .step {
+    display: grid; grid-template-columns: 36px 1fr auto;
+    align-items: center; gap: 12px 14px; padding: 12px 0;
+  }
+  .machine--trial .ph { font-family: var(--mono); font-size: 12px; color: var(--muted-2); }
+  .machine--trial .nm {
+    font-family: var(--sans); font-size: 16px; font-weight: 700;
+    text-transform: none; letter-spacing: 0; min-width: 0;
+  }
+  .machine--trial .who {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink); background: var(--bg-tint);
+    padding: 4px 10px; border-radius: 100px; white-space: nowrap;
+  }
+  .machine--trial .step.user .who { background: var(--accent); color: var(--on-accent); }
 
   /* grounds table */
   .grounds { margin-top: 46px; border-top: 1px solid var(--ink); }
@@ -348,13 +385,14 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
 </section>
 
 <div class="comic-zone" id="comic-zone">
-  <div id="comic-canvas-wrap" aria-hidden="true">
-    <canvas id="comic-canvas"></canvas>
-    <div id="comic-vignette"></div>
-    <div id="comic-halftone"></div>
-  </div>
+  <div class="comic-stage">
+    <div id="comic-canvas-wrap" aria-hidden="true">
+      <canvas id="comic-canvas"></canvas>
+      <div id="comic-vignette"></div>
+      <div id="comic-halftone"></div>
+    </div>
 
-  <div id="comic-scroll-track">
+    <div id="comic-scroll-track">
     <article class="comic-panel comic-panel--top" data-panel="0">
       <div class="comic-bubble-wrap comic-bubble-wrap--left visible">
         <div class="comic-bubble">
@@ -414,23 +452,32 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
         </div>
       </div>
     </article>
-  </div>
-
-  <div class="comic-outro wrap">
-    <p class="serif">Ready to write your ending?</p>
-    <a class="btn btn-primary" href="Lawyer - Alex.html">Prepare my case <span class="arrow">→</span></a>
+    </div>
   </div>
 </div>
 
+<!-- After comics — dedicated CTA beat -->
+<section class="comic-finale site-section" id="comic-finale">
+  <div class="wrap comic-finale__inner">
+    <p class="comic-finale__eyebrow">The story continues</p>
+    <h2 class="comic-finale__title">Ready to write your ending?</h2>
+    <p class="comic-finale__lede">You have seen the ticket, the fine, and the win. Now build your real defence with Prosecuto.</p>
+    <div class="comic-finale__actions">
+      <a class="btn btn-primary" href="Lawyer - Alex.html">Prepare my case <span class="arrow">→</span></a>
+      <a class="btn btn-ghost" href="#overview">How it works</a>
+    </div>
+  </div>
+</section>
+
 <!-- 1 · OVERVIEW STATEMENT -->
-<section id="overview" class="statement">
+<section id="overview" class="statement site-section">
   <div class="wrap">
     <p class="reveal"><span class="index">01 / Overview&nbsp;&nbsp;&nbsp;</span><br><br>A red light camera ticket is <b>owner liability</b> — no points, no suspension. Prosecuto turns that quiet advantage into a real defence: <span class="by">it interviews you, finds your grounds, and rehearses you until you can hold your own in court.</span></p>
   </div>
 </section>
 
 <!-- 2 · TWO PATHS -->
-<section id="paths" class="sec wrap">
+<section id="paths" class="sec wrap site-section">
   <div class="sec-head">
     <h2 class="reveal"><span class="index">02 / Two ways<br></span>Two paths to dispute</h2>
     <p class="reveal" style="transition-delay:.05s">Every ticket can be challenged two ways. Prosecuto knows the difference and prepares you for the one you choose — or both.</p>
@@ -462,7 +509,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
 <hr class="hairline wrap" style="border:0">
 
 <!-- 3 · LAWYER MODE -->
-<section id="lawyer" class="sec wrap">
+<section id="lawyer" class="sec wrap site-section">
   <div class="mode">
     <div class="reveal">
       <p class="eyebrow" style="margin-bottom:20px">03 / Lawyer Mode · Alex</p>
@@ -481,7 +528,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
     </div>
     <div class="mode-visual reveal" style="transition-delay:.06s">
       <p class="eyebrow" style="margin-bottom:18px; color:var(--muted-2)">Preparation package</p>
-      <div class="machine">
+      <div class="machine machine--package">
         <div class="step"><span class="ph">[ OPENING_STATEMENT ]</span><span class="nm">What to open with</span></div>
         <div class="step"><span class="ph">[ DEFENCE_SCRIPT ]</span><span class="nm">Say this, then this</span></div>
         <div class="step"><span class="ph">[ ANTICIPATED_Q ]</span><span class="nm">Q&nbsp;&amp;&nbsp;A pairs</span></div>
@@ -496,11 +543,11 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
 <hr class="hairline wrap" style="border:0">
 
 <!-- 4 · JUDGE MODE -->
-<section id="judge" class="sec wrap">
+<section id="judge" class="sec wrap site-section">
   <div class="mode flip">
     <div class="mode-visual reveal">
       <p class="eyebrow" style="margin-bottom:18px; color:var(--muted-2)">Trial state machine</p>
-      <div class="machine">
+      <div class="machine machine--trial">
         <div class="step"><span class="ph">01</span><span class="nm">Call to order</span><span class="who">Clerk</span></div>
         <div class="step"><span class="ph">02</span><span class="nm">Oath / affirmation</span><span class="who">Clerk</span></div>
         <div class="step"><span class="ph">03</span><span class="nm">Crown opening</span><span class="who">Crown</span></div>
@@ -528,7 +575,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
 </section>
 
 <!-- 5 · DEFENCE GROUNDS -->
-<section id="grounds" class="sec wrap">
+<section id="grounds" class="sec wrap site-section">
   <div class="sec-head">
     <h2 class="reveal"><span class="index">05 / The case<br></span>Seven defence grounds</h2>
     <p class="reveal" style="transition-delay:.05s">These are the only grounds Prosecuto works with — each tied to a specific document or piece of evidence. No invented theories.</p>
@@ -596,7 +643,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em
       const r = comicZone.getBoundingClientRect();
       return r.top < 72 && r.bottom > 72;
     })();
-    nav.classList.toggle('solid', window.scrollY > 24 || inComic);
+    nav.classList.toggle('solid', window.scrollY > 8);
     nav.classList.toggle('comic-active', !!inComic);
   };
   onScroll(); addEventListener('scroll', onScroll, { passive: true });

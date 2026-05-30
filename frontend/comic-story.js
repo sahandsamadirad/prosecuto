@@ -1,6 +1,5 @@
 /**
- * Scroll-linked comic story — adapted from Astro scroll-landing
- * (fixed canvas art + tall panels + intersection reveals)
+ * Scroll-linked comic story — panel-index sync (per beat, not zone fraction)
  */
 (function () {
   const zone = document.getElementById('comic-zone');
@@ -9,6 +8,8 @@
   const canvas = document.getElementById('comic-canvas');
   const ctx = canvas.getContext('2d', { alpha: false });
   const progressBar = document.getElementById('comic-progress');
+  const track = document.getElementById('comic-scroll-track');
+  const panels = track ? [...track.querySelectorAll('.comic-panel')] : [];
   const bubbles = zone.querySelectorAll('.comic-bubble-wrap');
 
   const PANEL_SRC = [
@@ -22,33 +23,56 @@
 
   const images = [];
   let loaded = 0;
-  let smoothT = 0;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const ART_SCALE = 0.58;
+  const MARKER_RATIO = 0.42;
 
   function resizeCanvas() {
-    const w = zone.querySelector('#comic-canvas-wrap').clientWidth;
-    const h = zone.querySelector('#comic-canvas-wrap').clientHeight;
+    const wrap = zone.querySelector('#comic-canvas-wrap');
+    if (!wrap) return;
+    const w = wrap.clientWidth;
+    const h = wrap.clientHeight;
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
   }
 
-  function getZoneMetrics() {
-    const rect = zone.getBoundingClientRect();
-    const top = window.scrollY + rect.top;
-    const height = zone.offsetHeight - window.innerHeight;
-    return { top, height: Math.max(height, 1) };
-  }
+  /** Which panel is at the viewport marker, and blend to the next */
+  function getPanelState() {
+    if (!panels.length) return { index: 0, blend: 0 };
 
-  function getScrollT() {
-    const { top, height } = getZoneMetrics();
-    const y = window.scrollY - top;
-    return Math.min(Math.max(y / height, 0), 1);
-  }
+    const marker = window.innerHeight * MARKER_RATIO;
+    let index = 0;
+    let blend = 0;
 
-  /** Fit full panel in frame so in-image speech bubbles are not cropped */
-  const ART_SCALE = 0.58;
+    for (let i = 0; i < panels.length; i++) {
+      const r = panels[i].getBoundingClientRect();
+
+      if (r.top <= marker && r.bottom > marker) {
+        index = i;
+        const inner = (marker - r.top) / Math.max(r.height, 1);
+        blend = Math.min(1, Math.max(0, (inner - 0.35) / 0.35));
+        return { index, blend };
+      }
+
+      if (i < panels.length - 1) {
+        const next = panels[i + 1].getBoundingClientRect();
+        if (r.bottom <= marker && next.top > marker) {
+          index = i;
+          const gap = next.top - r.bottom;
+          blend = gap > 0 ? Math.min(1, (marker - r.bottom) / gap) : 1;
+          return { index, blend };
+        }
+      }
+    }
+
+    const last = panels[panels.length - 1].getBoundingClientRect();
+    if (last.top <= marker) {
+      return { index: panels.length - 1, blend: 0 };
+    }
+    return { index: 0, blend: 0 };
+  }
 
   function drawContain(img, alpha) {
     if (!img || !img.naturalWidth) return;
@@ -68,39 +92,35 @@
     ctx.globalAlpha = 1;
   }
 
-  function renderArt(t) {
+  function renderArt(index, blend) {
     const n = images.length;
     if (!n || loaded < n) {
       ctx.fillStyle = '#1a2744';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       return;
     }
-    const pos = t * (n - 1);
-    const i0 = Math.floor(pos);
+
+    const i0 = Math.max(0, Math.min(index, n - 1));
     const i1 = Math.min(i0 + 1, n - 1);
-    const blend = pos - i0;
 
     ctx.fillStyle = '#1a2744';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawContain(images[i0], 1);
-    if (blend > 0.001 && i1 !== i0) {
+    if (blend > 0.02 && i1 !== i0) {
       drawContain(images[i1], blend);
     }
   }
 
   function tick() {
-    const t = getScrollT();
-    const delta = t - smoothT;
-    const abs = Math.abs(delta);
-    const lerp = abs > 0.05 ? 0.14 : abs > 0.01 ? 0.09 : 0.06;
-    smoothT += delta * lerp;
+    const { index, blend } = getPanelState();
+    renderArt(index, blend);
 
-    renderArt(smoothT);
-
-    if (progressBar) {
-      progressBar.style.width = smoothT * 100 + '%';
-      const inZone = t > 0.02 && t < 0.98;
-      progressBar.classList.toggle('active', inZone);
+    if (progressBar && panels.length > 1) {
+      const progress = (index + blend) / (panels.length - 1);
+      progressBar.style.width = progress * 100 + '%';
+      const trackRect = track.getBoundingClientRect();
+      const inTrack = trackRect.top < window.innerHeight && trackRect.bottom > 0;
+      progressBar.classList.toggle('active', inTrack);
     }
 
     requestAnimationFrame(tick);
@@ -129,7 +149,7 @@
         }
       });
     },
-    { threshold: 0.08, rootMargin: '0px' }
+    { threshold: 0.06, rootMargin: '0px 0px -5% 0px' }
   );
   bubbles.forEach((b) => io.observe(b));
 
