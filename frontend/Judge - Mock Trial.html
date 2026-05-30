@@ -8,6 +8,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,700&display=swap">
 <link rel="stylesheet" href="prosecuto.css">
 <link rel="stylesheet" href="meeting.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
 <title>Prosecuto · Judge Mode — Mock Trial</title>
 </head>
 <body>
@@ -16,9 +24,25 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="module" src="avatar-stage.js"></script>
 
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
+
+function AvatarMount(props) {
+  const [ready, setReady] = useState(!!window.ProsecutoAvatarMount);
+  useEffect(() => {
+    if (window.ProsecutoAvatarMount) {
+      setReady(true);
+      return undefined;
+    }
+    const onReady = () => setReady(true);
+    window.addEventListener('prosecuto-avatar-ready', onReady);
+    return () => window.removeEventListener('prosecuto-avatar-ready', onReady);
+  }, []);
+  if (!ready || !window.ProsecutoAvatarMount) return null;
+  return window.ProsecutoAvatarMount(props);
+}
 
 const CHARS = {
   clerk:    { nm: "Court Clerk", rl: "Clerk", av: "clerk", glyph: "K", color: "#4a4533" },
@@ -216,14 +240,16 @@ function App() {
         </div>
 
         <div className="avatar-slot">
-          <div className="ring" style={{borderColor: aMeta.color + "55"}}>
-            <span className="avatar-glyph" style={{color: aMeta.color}}>{aMeta.glyph}</span>
-          </div>
-          <div style={{textAlign:'center'}}>
+          <AvatarMount speaking={speaking} />
+          <div className="avatar-info">
+            <div className="avatar-fallback">
+              <div className="ring" style={{borderColor: aMeta.color + "55"}}>
+                <span className="avatar-glyph" style={{color: aMeta.color}}>{aMeta.glyph}</span>
+              </div>
+            </div>
             <div className="who-name serif">{aMeta.nm}</div>
             <div className="who-role">{aMeta.rl} · now speaking</div>
           </div>
-          <code>3D avatar mounts here — swaps per active character</code>
         </div>
 
         <div className="caption">
