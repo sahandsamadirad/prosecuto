@@ -1,0 +1,98 @@
+/* ============================================================
+   PROSECUTO — shared design system
+   Editorial legal-tech: warm paper, ink black, refined serif.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opt,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  /* paper + ink */
+  --bg:        #F4F3EF;   /* Harvey clean warm-white (de-saturated) */
+  --bg-tint:   #ECEAE3;   /* slightly deeper panel */
+  --surface:   #FBFBF8;   /* card / raised */
+  --surface-2: #F7F6F1;
+  --ink:       #1F1D1A;   /* Harvey brand ink (theme-color) */
+  --muted:     #6B675F;   /* secondary text */
+  --muted-2:   #95918A;   /* tertiary (neutralised) */
+  --line:      #E3E1D9;   /* hairline */
+  --line-2:    #D2CFC5;
+  --accent:    #1F1D1A;   /* CTA = ink, monochrome */
+  --on-accent: #F4F3EF;
+
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --sans:  'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  --mono:  'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  --maxw: 1240px;
+  --pad: clamp(20px, 5vw, 64px);
+  --r: 4px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+::selection { background: #1f1d1a1f; }
+a { color: inherit; text-decoration: none; }
+img, video { display: block; max-width: 100%; }
+
+/* ---- type primitives ---- */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+.serif { font-family: var(--serif); font-weight: 400; letter-spacing: -0.018em; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; margin: 0; }
+
+/* ---- buttons ---- */
+.btn {
+  --bw: 1px;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--sans); font-size: 15px; font-weight: 500;
+  letter-spacing: 0;
+  padding: 14px 22px;
+  border-radius: 100px;
+  border: var(--bw) solid transparent;
+  cursor: pointer;
+  transition: background .25s ease, color .25s ease, border-color .25s ease, transform .15s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--ink); color: var(--on-accent); }
+.btn-primary:hover { background: #2e2b24; }
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+.btn-ghost:hover { background: #1f1d1a0a; border-color: var(--ink); }
+.btn .arrow { transition: transform .25s ease; }
+.btn:hover .arrow { transform: translateX(3px); }
+
+/* ---- layout helpers ---- */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--pad); }
+.hairline { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+/* reveal on scroll — visible by default (opacity 1) so content NEVER hides;
+   JS only removes a subtle offset for a gentle entrance. */
+.reveal { opacity: 1; transform: translateY(14px); transition: transform .7s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+.reveal.in { transform: none; }
+
+/* striped placeholder texture (for video / avatar slots) */
+.placeholder-stripes {
+  background-color: var(--bg-tint);
+  background-image: repeating-linear-gradient(
+    -45deg, transparent 0 11px, #1a191609 11px 12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}

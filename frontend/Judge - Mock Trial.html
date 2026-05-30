@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<title>Prosecuto · Lawyer Mode — Alex</title>
+<title>Prosecuto · Judge Mode — Mock Trial</title>
 <style>
 /* ============================================================
    PROSECUTO — shared design system
@@ -303,6 +303,42 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
 .legal-doc .sig { flex: 1; border-top: 1px solid var(--ink); padding-top: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 
 </style>
+<style>
+  /* phase rail */
+  .rail { display: flex; gap: 0; overflow-x: auto; padding: 10px 24px; border-bottom: 1px solid var(--line); background: var(--surface-2); scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail .ph {
+    display: flex; align-items: center; gap: 9px; flex: none; padding: 5px 16px 5px 0; position: relative;
+    opacity: .42; transition: opacity .3s;
+  }
+  .rail .ph.done { opacity: .7; }
+  .rail .ph.cur { opacity: 1; }
+  .rail .ph .dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line-2); display: grid; place-items: center; font-family: var(--mono); font-size: 9px; color: var(--muted); flex: none; }
+  .rail .ph.cur .dot { background: var(--ink); border-color: var(--ink); color: var(--on-accent); }
+  .rail .ph.done .dot { background: var(--bg-tint); border-color: var(--line-2); }
+  .rail .ph .lb { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+  .rail .ph::after { content: ""; width: 14px; height: 1px; background: var(--line-2); margin-left: 4px; }
+  .rail .ph:last-child::after { display: none; }
+
+  /* verdict banner */
+  .verdict-wrap { animation: rise .5s cubic-bezier(.2,.7,.2,1); margin-bottom: 24px; }
+  .verdict-banner {
+    border: 1px solid var(--ink); border-radius: 12px; overflow: hidden; background: var(--ink); color: var(--on-accent);
+  }
+  .verdict-banner .vb-top { padding: 26px 28px; text-align: center; border-bottom: 1px solid #ffffff1f; }
+  .verdict-banner .vlabel { font-family: var(--mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #b9b1a0; }
+  .verdict-banner .vresult { font-family: var(--serif); font-size: 46px; letter-spacing: -.02em; margin-top: 8px; }
+  .verdict-banner .vline { padding: 20px 28px; color: #cabfae; font-size: 15px; line-height: 1.6; }
+  .feedback-card { margin-top: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+  .feedback-card .fh { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .feedback-card .fh .av { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-accent); display: grid; place-items: center; font-family: var(--serif); font-size: 13px; }
+  .feedback-card .fh .nm { font-weight: 600; font-size: 14px; }
+  .feedback-card .fh .rl { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); }
+  .fb-item { display: grid; grid-template-columns: 70px 1fr; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.5; }
+  .fb-item .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding-top: 2px; }
+  .fb-item.good .k { color: #2f6b46; } .fb-item.fix .k { color: #6f2c2c; }
+  .verdict-actions { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -314,199 +350,215 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
 
-/* ---------- DOCUMENTS Alex can share ---------- */
+const CHARS = {
+  clerk:    { nm: "Court Clerk", rl: "Clerk", av: "clerk", glyph: "K", color: "#4a4533" },
+  judge:    { nm: "Justice of the Peace", rl: "The Bench", av: "judge", glyph: "J", color: "#25324a" },
+  crown:    { nm: "Crown Prosecutor", rl: "Crown", av: "crown", glyph: "P", color: "#6f2c2c" },
+  me:       { nm: "You", rl: "Defendant", av: "me", glyph: "Y", color: "#1a1916" },
+  prosecuto:{ nm: "Prosecuto", rl: "Review", av: "alex", glyph: "✦", color: "#1a1916" }
+};
+
+/* tendered exhibits */
 const DOCS = {
-  statdec: {
-    title: "Statutory Declaration",
-    sub: "Ground 1 · Owner was not the driver",
+  certificate: {
+    title: "Certificate of Offence", sub: "Exhibit 1 · tendered by the Crown",
     render: () => (
       <div className="legal-doc">
-        <div className="lh"><span>Form · Ontario</span><span>Prov. Offences Act</span></div>
-        <h2>Statutory Declaration</h2>
-        <div className="sec-no">Declaration of the Vehicle Owner</div>
-        <p>I, <span className="fill">[owner full name]</span>, of the City of <span className="fill">[city]</span>, in the Province of Ontario, do solemnly declare that:</p>
-        <p>1. I am the registered owner of the motor vehicle bearing Ontario licence plate <span className="fill">[plate]</span>.</p>
-        <p>2. On <span className="fill">[offence date]</span>, at the intersection of <span className="fill">[intersection]</span>, I was <b>not</b> the driver of the said vehicle.</p>
-        <p>3. The driver at the relevant time was <span className="fill">[driver name]</span>, who has knowledge of these facts.</p>
-        <p>And I make this solemn declaration conscientiously believing it to be true, and knowing that it is of the same force and effect as if made under oath.</p>
-        <div className="sig-row">
-          <div className="sig">Declarant signature</div>
-          <div className="sig">Commissioner for taking affidavits</div>
+        <div className="lh"><span>Provincial Offences Act</span><span>Exhibit 1</span></div>
+        <h2>Certificate of Offence</h2>
+        <div className="sec-no">Red light camera · HTA s.144</div>
+        <p>Plate number: <span className="fill">[plate]</span><br/>Date of offence: <span className="fill">[date]</span><br/>Location: <span className="fill">[intersection]</span><br/>Issuing officer / badge no.: <span className="fill">[badge]</span></p>
+        <p>The provincial offences officer certifies that they have reasonable and probable grounds to believe, and do believe, that the offence was committed.</p>
+        <p style={{color:'var(--muted)',fontSize:'14px'}}>Defence note: examine for defects — a missing badge number, wrong date, or mismatched plate can defeat the certificate (Ground 6).</p>
+      </div>
+    )
+  },
+  photo: {
+    title: "Photograph — camera capture", sub: "Exhibit 2 · tendered by the Crown",
+    render: () => (
+      <div className="legal-doc">
+        <div className="lh"><span>Camera system</span><span>Exhibit 2</span></div>
+        <h2>Photographic Evidence</h2>
+        <div className="sec-no">Intersection capture · two frames</div>
+        <div className="placeholder-stripes" style={{aspectRatio:'4/3',borderRadius:'8px',border:'1px solid var(--line-2)',display:'grid',placeItems:'center',marginBottom:'16px'}}>
+          <code style={{fontFamily:'var(--mono)',fontSize:'12px',color:'var(--muted)'}}>[ camera capture — intersection &amp; plate ]</code>
         </div>
+        <p style={{color:'var(--muted)',fontSize:'14px'}}>Defence note: does the image clearly identify the plate and the driver? Owner liability means the photo need not show the driver's face — but plate clarity is fair game (Ground 4).</p>
       </div>
     )
   },
-  caselaw: {
-    title: "R. v. Jordan, 2016 SCC 27",
-    sub: "Case law · s.11(b) Charter — delay",
+  camcert: {
+    title: "Camera Operating Certificate", sub: "Exhibit 3 · tendered by the Crown",
     render: () => (
       <div className="legal-doc">
-        <div className="lh"><span>Supreme Court of Canada</span><span>2016 SCC 27</span></div>
-        <h2>R. v. Jordan</h2>
-        <div className="sec-no">Right to be tried within a reasonable time</div>
-        <p>The Supreme Court set a <b>presumptive ceiling</b> beyond which delay is considered unreasonable under s.11(b) of the Charter. For matters in provincial court, that ceiling is <b>18 months</b> from the charge to the actual or anticipated end of trial.</p>
-        <p className="cite">“…a presumptive ceiling of 18 months for cases tried in the provincial court. Delay beyond this ceiling is presumptively unreasonable.”</p>
-        <p style={{marginTop:'18px'}}><b>Why it matters for you:</b> if your trial date falls more than 18 months after the date on your Certificate of Offence, this is a live ground to have the charge stayed. We will calculate this precisely once we confirm both dates.</p>
-        <p style={{color:'var(--muted)', fontSize:'14px'}}>Verify the current state of the law with a paralegal — ceilings and deductions have nuance.</p>
-      </div>
-    )
-  },
-  package: {
-    title: "Your Preparation Package",
-    sub: "Generated for your case",
-    render: () => (
-      <div className="legal-doc">
-        <div className="lh"><span>Prosecuto · Lawyer Mode</span><span>Draft v1</span></div>
-        <h2>Preparation Package</h2>
-        <div className="sec-no">Dispute path · Both — Early Resolution, then Trial</div>
-        <p style={{fontFamily:'var(--mono)',fontSize:'12px',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted-2)'}}>[ Opening statement ]</p>
-        <p>“Good morning, Your Worship. My name is <span className="fill">[name]</span>. I am the registered owner of the vehicle, but I was not its driver on the date in question, and I'll be relying on a statutory declaration to that effect.”</p>
-        <p style={{fontFamily:'var(--mono)',fontSize:'12px',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted-2)',marginTop:'24px'}}>[ Defence script — order of play ]</p>
-        <p>1. Confirm your identity and ownership.<br/>2. Tender the statutory declaration naming the driver.<br/>3. Request the camera operating &amp; calibration certificate in disclosure.<br/>4. If the trial date is &gt; 18 months out, raise s.11(b).</p>
-        <p style={{fontFamily:'var(--mono)',fontSize:'12px',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted-2)',marginTop:'24px'}}>[ Bring to court ]</p>
-        <p>— Signed statutory declaration<br/>— A copy of the Certificate of Offence<br/>— Any disclosure the Crown provided</p>
-        <p style={{fontFamily:'var(--mono)',fontSize:'12px',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--muted-2)',marginTop:'24px'}}>[ Delivery ]</p>
-        <p>Address the bench as “Your Worship.” Speak slowly. Don't argue facts that aren't in dispute. Concede nothing about who was driving beyond the declaration.</p>
+        <div className="lh"><span>Equipment record</span><span>Exhibit 3</span></div>
+        <h2>Camera Operating Certificate</h2>
+        <div className="sec-no">Calibration &amp; maintenance</div>
+        <p>This certifies that the red light camera system at the location was tested and operating accurately at the material time.</p>
+        <p>Last calibration: <span className="fill">[date]</span><br/>Amber phase duration: <span className="fill">[seconds]</span><br/>Maintenance on record: <span className="fill">[yes / no]</span></p>
+        <p style={{color:'var(--muted)',fontSize:'14px'}}>Defence note: request the full calibration and maintenance records in disclosure. Gaps support Ground 2 (malfunction); a short amber phase supports Ground 5.</p>
       </div>
     )
   }
 };
 
-/* ---------- Scripted intake flow for Alex ---------- */
-const FLOW = [
-  {
-    text: "I'm Alex. I'll help you build a real defence for your red light camera ticket — plain language, your case only. To start: when were you issued the ticket, and which intersection was it?",
-    suggest: ["March 3, 2026 — Hurontario & Eglinton", "About two weeks ago", "I don't have the date in front of me"]
-  },
-  {
-    text: "Good. Now the question that decides everything: when the camera fired, were you driving — or is the car yours but someone else was behind the wheel?",
-    suggest: ["It's my car, but my partner was driving", "I was the driver", "I'd already sold the car"]
-  },
-  {
-    text: "That's your strongest ground — owner was not the driver. A red light camera ticket is owner liability, so if we put the actual driver on the record with a sworn declaration, the charge against you becomes very hard to sustain. Here's the form we'll prepare.",
-    doc: "statdec",
-    suggest: ["My partner will sign it", "Will they get the ticket instead?", "What if they won't sign?"]
-  },
-  {
-    text: "Next we make the Crown prove its case. I'll have you formally request full disclosure — the camera's operating and calibration records. You're entitled to it before trial, and gaps in it are a defence on their own. One more lever depends on timing.",
-    doc: "caselaw",
-    suggest: ["My trial is 20 months out", "It's only a few months away", "How do I request disclosure?"]
-  },
-  {
-    text: "Then s.11(b) is live and I've flagged it. I've assembled everything into your preparation package — opening statement, the order you'll speak in, what to bring, and how to carry yourself. Read it, then I'd rehearse the whole thing in a mock trial before the real date.",
-    doc: "package",
-    suggest: ["Open the package", "Run a mock trial", "Can you quiz me first?"]
-  },
-  {
-    text: "Whenever you're ready, step into Judge Mode and we'll run the full hearing — Crown, clerk, and a Justice of the Peace — start to finish, then I'll review how you did. You can come back to me anytime to adjust the package.",
-    suggest: ["Run mock trial", "Stay and prepare more"]
-  }
+/* ---- the trial state machine ---- */
+const PHASES = [
+  { rail:"Call to order", who:"clerk", mode:"auto",
+    text:"All rise. The Ontario Court of Justice, Provincial Offences Court, is now in session. You may be seated. We are here on the matter of the City versus the defendant — one count under the Highway Traffic Act, section 144, red light camera." },
+  { rail:"Affirmation", mode:"user", cue:{ who:"clerk", text:"Do you affirm that the evidence you give to this court will be the truth, the whole truth, and nothing but the truth?" },
+    suggest:["I do solemnly affirm.","I affirm."] },
+  { rail:"Court opens", who:"judge", mode:"auto",
+    text:"Thank you. I am the Justice of the Peace hearing this matter. The standard of proof is beyond a reasonable doubt, and the burden rests with the Crown throughout. Madam Prosecutor, you may open." },
+  { rail:"Crown opening", who:"crown", mode:"auto",
+    text:"Thank you, Your Worship. The Crown will show that on the date in question, the vehicle registered to the defendant entered the intersection against a red signal, captured by an approved red light camera system. The evidence is a certificate of offence, a photograph, and the camera operating certificate." },
+  { rail:"Defence opening", mode:"user", cue:{ who:"judge", text:"The defence may now make its opening statement." },
+    suggest:["I'm the registered owner, but I was not the driver.","I'll rely on a statutory declaration naming the driver.","I dispute that the plate is clearly identified."] },
+  { rail:"Crown's case", who:"crown", mode:"auto",
+    text:"The Crown tenders three exhibits, Your Worship: the Certificate of Offence as Exhibit 1, the photographic capture as Exhibit 2, and the Camera Operating Certificate as Exhibit 3. The Crown's case rests on the certificate and the operating record.",
+    docs:["certificate","photo","camcert"] },
+  { rail:"Cross Crown", mode:"user", cue:{ who:"judge", text:"You may cross-examine on the Crown's evidence." },
+    suggest:["Was the camera's calibration record disclosed to me?","Does the photograph clearly identify the driver?","When was the equipment last serviced?"],
+    reply:{ who:"crown", text:"The operating certificate is tendered, Your Worship; the full underlying calibration log was not included in the disclosure package. As to the driver — this is an owner-liability offence; the Crown does not allege a specific driver." } },
+  { rail:"Defence case", mode:"user", cue:{ who:"judge", text:"The defence may now present its case." },
+    suggest:["I tender a statutory declaration — I was not the driver.","The Crown failed to disclose the calibration records.","There was no proper advance signage at the intersection."] },
+  { rail:"Cross defence", mode:"user", cue:{ who:"crown", text:"Just one question. You acknowledge that you are the registered owner of the vehicle, correct?" },
+    suggest:["Yes — but ownership is not driving, and a declaration names the driver.","I own it, yes. I was not behind the wheel."],
+    reply:{ who:"crown", text:"No further questions, Your Worship." } },
+  { rail:"Crown closing", who:"crown", mode:"auto",
+    text:"In closing, the Crown's evidence establishes the offence on an owner-liability basis. The Crown acknowledges, however, that the full calibration log was not disclosed. The Crown submits the certificate alone is sufficient and leaves the matter to Your Worship." },
+  { rail:"Defence closing", mode:"user", cue:{ who:"judge", text:"And finally, the defence may close." },
+    suggest:["The Crown's own admission of non-disclosure leaves reasonable doubt.","The driver was never established, and the declaration stands unchallenged.","I respectfully ask that the charge be dismissed."] },
+  { rail:"Verdict", who:"judge", mode:"verdict",
+    text:"I've heard both sides. Having considered the evidence and the Crown's admission regarding disclosure, I find as follows." }
 ];
 
-const ROLE_META = {
-  alex: { nm: "Alex", rl: "Lawyer", av: "alex", glyph: "A" },
-  me:   { nm: "You",  rl: "Defendant", av: "me", glyph: "Y" }
+const VERDICT = {
+  result: "NOT GUILTY",
+  line: "The Crown bears the burden beyond a reasonable doubt. The defence tendered an unchallenged statutory declaration, and the Crown conceded the calibration log was not disclosed. On this record, the court is left with a reasonable doubt. The charge is dismissed.",
+  feedback: [
+    { k: "Strong", cls: "good", t: "You raised the disclosure gap early and made the Crown concede it on the record — that's what created the doubt." },
+    { k: "Strong", cls: "good", t: "Tendering the statutory declaration cleanly, without over-explaining, kept the driver's identity unproven." },
+    { k: "Fix", cls: "fix", t: "On cross, you volunteered ownership a little fast. Answer only what's asked — \u201cYes\u201d was enough before adding the qualifier." },
+    { k: "Fix", cls: "fix", t: "You addressed the bench as \u201cYour Honour\u201d once. In Provincial Offences Court it's \u201cYour Worship.\u201d Small thing, but it signals preparation." }
+  ]
 };
 
 function App() {
   const [messages, setMessages] = useState([]);
-  const [step, setStep] = useState(-1);
+  const [cur, setCur] = useState(-1);
   const [suggest, setSuggest] = useState([]);
   const [input, setInput] = useState("");
   const [speaking, setSpeaking] = useState(false);
-  const [caption, setCaption] = useState({ text: "", show: false });
+  const [active, setActive] = useState("clerk");
+  const [caption, setCaption] = useState({ who:"clerk", text:"", show:false });
   const [thinking, setThinking] = useState(false);
   const [tab, setTab] = useState("chat");
   const [openDoc, setOpenDoc] = useState(null);
   const [mic, setMic] = useState(false);
-  const transcriptRef = useRef(null);
-  const captionTimer = useRef(null);
+  const [ended, setEnded] = useState(false);
+  const tRef = useRef(null);
+  const capTimer = useRef(null);
 
   const sharedDocs = messages.filter(m => m.doc).map(m => m.doc);
 
   const scrollDown = useCallback(() => {
-    requestAnimationFrame(() => {
-      const el = transcriptRef.current;
-      if (el) el.scrollTop = el.scrollHeight;
-    });
+    requestAnimationFrame(() => { const el = tRef.current; if (el) el.scrollTop = el.scrollHeight; });
   }, []);
 
-  // typewriter caption
-  const speak = useCallback((text) => {
-    clearInterval(captionTimer.current);
+  const speak = useCallback((who, text, after) => {
+    clearInterval(capTimer.current);
+    setActive(who);
     setSpeaking(true);
-    setCaption({ text: "", show: true });
-    const words = text.split(" ");
-    let i = 0;
-    captionTimer.current = setInterval(() => {
+    setCaption({ who, text: "", show: true });
+    const words = text.split(" "); let i = 0;
+    capTimer.current = setInterval(() => {
       i++;
-      setCaption({ text: words.slice(0, i).join(" "), show: true });
+      setCaption({ who, text: words.slice(0, i).join(" "), show: true });
       if (i >= words.length) {
-        clearInterval(captionTimer.current);
-        setTimeout(() => setSpeaking(false), 400);
+        clearInterval(capTimer.current);
+        setTimeout(() => { setSpeaking(false); after && after(); }, 650);
       }
-    }, 55);
+    }, 48);
   }, []);
 
-  const runAlex = useCallback((idx) => {
-    const node = FLOW[idx];
-    if (!node) return;
-    setSuggest([]);
-    setThinking(true);
-    scrollDown();
+  // play an auto/verdict/cue line (a character speaks), then callback
+  const charSpeak = useCallback((who, text, docs, after) => {
+    setSuggest([]); setThinking(true); scrollDown();
     setTimeout(() => {
       setThinking(false);
-      setMessages(m => [...m, { role: "alex", text: node.text, doc: node.doc || null }]);
-      speak(node.text);
-      setSuggest(node.suggest || []);
-      setStep(idx);
+      setMessages(m => [...m, { role: who, text, doc: null }]);
+      if (docs) docs.forEach((d, k) => setTimeout(() => {
+        setMessages(m => [...m, { role: who, text: null, doc: d }]); scrollDown();
+      }, 500 + k * 450));
+      speak(who, text, after);
       scrollDown();
-    }, 900);
+    }, 800);
   }, [speak, scrollDown]);
 
-  // kick off
-  useEffect(() => { const t = setTimeout(() => runAlex(0), 600); return () => clearTimeout(t); }, [runAlex]);
-  useEffect(scrollDown, [messages, thinking]);
+  const arrive = useCallback((i) => {
+    const p = PHASES[i];
+    if (!p) return;
+    setCur(i);
+    if (p.mode === "auto") {
+      charSpeak(p.who, p.text, p.docs, () => setTimeout(() => arrive(i + 1), 700));
+    } else if (p.mode === "verdict") {
+      charSpeak(p.who, p.text, null, () => setTimeout(() => setEnded(true), 600));
+    } else { // user
+      charSpeak(p.cue.who, p.cue.text, null, () => setSuggest(p.suggest || []));
+    }
+  }, [charSpeak]);
+
+  useEffect(() => { const t = setTimeout(() => arrive(0), 700); return () => clearTimeout(t); }, [arrive]);
+  useEffect(scrollDown, [messages, thinking, ended]);
 
   const send = (text) => {
     const val = (text ?? input).trim();
     if (!val || thinking) return;
-    clearInterval(captionTimer.current); setSpeaking(false);
+    const p = PHASES[cur];
+    if (!p || p.mode !== "user") return;
+    clearInterval(capTimer.current); setSpeaking(false);
     setMessages(m => [...m, { role: "me", text: val }]);
-    setInput("");
-    setSuggest([]);
-    setMic(false);
-    const next = step + 1;
-    setTimeout(() => runAlex(next), 500);
+    setInput(""); setSuggest([]); setMic(false);
+    setTimeout(() => {
+      if (p.reply) charSpeak(p.reply.who, p.reply.text, null, () => setTimeout(() => arrive(cur + 1), 600));
+      else arrive(cur + 1);
+    }, 550);
   };
 
-  const onChip = (c) => {
-    if (c === "Run mock trial") { window.location.href = "judge.html"; return; }
-    if (c === "Open the package") { setOpenDoc("package"); return; }
-    send(c);
+  const onChip = (c) => send(c);
+
+  const restart = () => {
+    setMessages([]); setCur(-1); setSuggest([]); setEnded(false);
+    setCaption({ who:"clerk", text:"", show:false }); setActive("clerk");
+    setTimeout(() => arrive(0), 500);
   };
+
+  const aMeta = CHARS[active];
 
   return (
     <div className="room">
-      {/* LEFT — 3D avatar stage */}
+      {/* LEFT — active speaker stage */}
       <div className={"stage" + (speaking ? " speaking" : "")}>
         <div className="stage-top">
-          <a className="back-link" href="index.html">← Prosecuto</a>
-          <span className="mode-pill">Lawyer Mode</span>
+          <a className="back-link" href="Prosecuto - Landing.html">← Prosecuto</a>
+          <span className="mode-pill">Judge Mode · Mock trial</span>
         </div>
 
         <div className="avatar-slot">
-          <div className="ring"><span className="avatar-glyph">A</span></div>
-          <div style={{textAlign:'center'}}>
-            <div className="who-name serif">Alex</div>
-            <div className="who-role">Lawyer · Case prep</div>
+          <div className="ring" style={{borderColor: aMeta.color + "55"}}>
+            <span className="avatar-glyph" style={{color: aMeta.color}}>{aMeta.glyph}</span>
           </div>
-          <code>{/* your 3D face mounts in this stage */}3D avatar mounts here — left stage</code>
+          <div style={{textAlign:'center'}}>
+            <div className="who-name serif">{aMeta.nm}</div>
+            <div className="who-role">{aMeta.rl} · now speaking</div>
+          </div>
+          <code>3D avatar mounts here — swaps per active character</code>
         </div>
 
         <div className="caption">
           <div className={"caption-inner" + (caption.show ? " show" : "")}>
-            <span className="spk">Alex
+            <span className="spk">{CHARS[caption.who]?.nm}
               <span className="wave"><i></i><i></i><i></i><i></i><i></i></span>
             </span>
             {caption.text || "…"}
@@ -514,68 +566,95 @@ function App() {
         </div>
       </div>
 
-      {/* RIGHT — conversation */}
+      {/* RIGHT — courtroom transcript */}
       <div className="panel">
         <div className="panel-head">
           <div>
-            <h1 className="serif">Case preparation</h1>
-            <div className="sub">Early Resolution &amp; Trial</div>
+            <h1 className="serif">Provincial Offences Court</h1>
+            <div className="sub">City v. Defendant · HTA s.144</div>
           </div>
           <div className="head-tabs">
-            <button className={tab==="chat"?"active":""} onClick={()=>setTab("chat")}>Conversation</button>
-            <button className={tab==="docs"?"active":""} onClick={()=>setTab("docs")}>
-              Documents <span className="badge">{sharedDocs.length}</span>
-            </button>
+            <button className={tab==="chat"?"active":""} onClick={()=>setTab("chat")}>Transcript</button>
+            <button className={tab==="docs"?"active":""} onClick={()=>setTab("docs")}>Evidence <span className="badge">{sharedDocs.length}</span></button>
           </div>
         </div>
 
+        {/* phase rail */}
+        <div className="rail">
+          {PHASES.map((p, i) => (
+            <div key={i} className={"ph" + (i===cur && !ended ? " cur" : "") + (i<cur || ended ? " done" : "")}>
+              <span className="dot">{i<cur || ended ? "✓" : i+1}</span>
+              <span className="lb">{p.rail}</span>
+            </div>
+          ))}
+        </div>
+
         {tab === "chat" ? (
-          <div className="transcript" ref={transcriptRef}>
+          <div className="transcript" ref={tRef}>
             {messages.map((m, i) => {
-              const meta = ROLE_META[m.role];
+              const meta = CHARS[m.role];
+              if (m.doc) {
+                return (
+                  <div key={i} className={"turn"} style={{maxWidth:'78%'}}>
+                    <div className="doc-card" style={{marginTop:0}} onClick={()=>setOpenDoc(m.doc)}>
+                      <div className="dc-top">
+                        <div className="dc-ico"></div>
+                        <div><div className="dc-t">{DOCS[m.doc].title}</div><div className="dc-s">{DOCS[m.doc].sub}</div></div>
+                        <div className="dc-open">Open →</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
               return (
                 <div key={i} className={"turn" + (m.role==="me" ? " me" : "")}>
                   <div className="meta">
                     <span className={"av " + meta.av}>{meta.glyph}</span>
-                    <span className="nm">{meta.nm}</span>
-                    <span className="rl">{meta.rl}</span>
+                    <span className="nm">{meta.nm}</span><span className="rl">{meta.rl}</span>
                   </div>
                   <div className="body">{m.text}</div>
-                  {m.doc && (
-                    <div className="doc-card" onClick={()=>setOpenDoc(m.doc)}>
-                      <div className="dc-top">
-                        <div className="dc-ico"></div>
-                        <div>
-                          <div className="dc-t">{DOCS[m.doc].title}</div>
-                          <div className="dc-s">{DOCS[m.doc].sub}</div>
-                        </div>
-                        <div className="dc-open">Open →</div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })}
             {thinking && (
               <div className="turn">
-                <div className="meta"><span className="av alex">A</span><span className="nm">Alex</span><span className="rl">Lawyer</span></div>
+                <div className="meta"><span className={"av " + CHARS[active].av}>{CHARS[active].glyph}</span><span className="nm">{CHARS[active].nm}</span></div>
                 <div className="body"><span className="thinking"><i></i><i></i><i></i></span></div>
+              </div>
+            )}
+
+            {ended && (
+              <div className="verdict-wrap">
+                <div className="verdict-banner">
+                  <div className="vb-top">
+                    <div className="vlabel">The court finds the defendant</div>
+                    <div className="vresult serif">{VERDICT.result}</div>
+                  </div>
+                  <div className="vline">{VERDICT.line}</div>
+                </div>
+                <div className="feedback-card">
+                  <div className="fh">
+                    <span className="av">✦</span><span className="nm">Prosecuto</span>
+                    <span className="rl">Breaking character · performance review</span>
+                  </div>
+                  {VERDICT.feedback.map((f, i) => (
+                    <div key={i} className={"fb-item " + f.cls}><span className="k">{f.k}</span><span>{f.t}</span></div>
+                  ))}
+                  <div className="verdict-actions">
+                    <button className="btn btn-primary" onClick={restart}>Run it again</button>
+                    <a className="btn btn-ghost" href="Lawyer - Alex.html">Back to prep with Alex</a>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="transcript" ref={transcriptRef}>
-            {sharedDocs.length === 0 && (
-              <p style={{color:'var(--muted)',fontFamily:'var(--mono)',fontSize:'13px'}}>No documents shared yet. Alex will share forms and case law as your case develops.</p>
-            )}
+          <div className="transcript" ref={tRef}>
+            {sharedDocs.length === 0 && <p style={{color:'var(--muted)',fontFamily:'var(--mono)',fontSize:'13px'}}>No exhibits tendered yet.</p>}
             {sharedDocs.map((d, i) => (
               <div className="doc-card" key={i} style={{marginBottom:'14px'}} onClick={()=>setOpenDoc(d)}>
-                <div className="dc-top">
-                  <div className="dc-ico"></div>
-                  <div>
-                    <div className="dc-t">{DOCS[d].title}</div>
-                    <div className="dc-s">{DOCS[d].sub}</div>
-                  </div>
+                <div className="dc-top"><div className="dc-ico"></div>
+                  <div><div className="dc-t">{DOCS[d].title}</div><div className="dc-s">{DOCS[d].sub}</div></div>
                   <div className="dc-open">Open →</div>
                 </div>
               </div>
@@ -586,18 +665,14 @@ function App() {
         {/* composer */}
         <div className="composer">
           {suggest.length > 0 && (
-            <div className="suggest">
-              {suggest.map((s, i) => <button key={i} className="chip" onClick={()=>onChip(s)}>{s}</button>)}
-            </div>
+            <div className="suggest">{suggest.map((s,i)=><button key={i} className="chip" onClick={()=>onChip(s)}>{s}</button>)}</div>
           )}
           <div className="input-row">
-            <textarea
-              rows="1" placeholder="Type your answer, or use the mic…"
-              value={input}
-              onChange={e=>setInput(e.target.value)}
-              onKeyDown={e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); } }}
-            />
-            <button className={"icon-btn mic" + (mic ? " live" : "")} title="Voice input" onClick={()=>setMic(v=>!v)}>
+            <textarea rows="1"
+              placeholder={ended ? "The trial has concluded." : (PHASES[cur] && PHASES[cur].mode === "user" ? "Address the court… (it's your turn)" : "Listening to the court…")}
+              value={input} onChange={e=>setInput(e.target.value)}
+              onKeyDown={e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); } }} />
+            <button className={"icon-btn mic" + (mic ? " live" : "")} onClick={()=>setMic(v=>!v)} title="Voice input">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg>
             </button>
             <button className="icon-btn send-btn" disabled={!input.trim()} onClick={()=>send()} title="Send">
@@ -606,17 +681,14 @@ function App() {
           </div>
         </div>
 
-        {/* document viewer drawer */}
+        {/* document viewer */}
         <div className={"docview" + (openDoc ? " open" : "")}>
           <div className="scrim" onClick={()=>setOpenDoc(null)}></div>
           <div className="sheet">
             {openDoc && (
               <React.Fragment>
                 <div className="sheet-head">
-                  <div>
-                    <div className="st">{DOCS[openDoc].title}</div>
-                    <div className="ss">{DOCS[openDoc].sub}</div>
-                  </div>
+                  <div><div className="st">{DOCS[openDoc].title}</div><div className="ss">{DOCS[openDoc].sub}</div></div>
                   <button className="icon-btn" onClick={()=>setOpenDoc(null)} title="Close">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
                   </button>
