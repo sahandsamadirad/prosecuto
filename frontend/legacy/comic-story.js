@@ -68,6 +68,39 @@
     return Math.min(Math.max((window.scrollY - top) / height, 0), 1);
   }
 
+  function getBeat() {
+    if (!track || !panels.length) return 0;
+
+    const trackRect = track.getBoundingClientRect();
+    const y = -trackRect.top;
+    const totalScrollable = track.offsetHeight - window.innerHeight;
+    const clampedY = Math.min(Math.max(y, 0), totalScrollable);
+
+    // Calculate targetYs where each panel's content is centered in the viewport
+    const vh = window.innerHeight;
+    const targetYs = panels.map(panel => {
+      return panel.offsetTop + panel.offsetHeight / 2 - vh / 2;
+    });
+
+    // Enforce targetYs[0] to be 0 so the first panel is active at the start of scroll
+    targetYs[0] = 0;
+
+    if (clampedY <= targetYs[0]) return 0;
+    
+    const lastIndex = panels.length - 1;
+    if (clampedY >= targetYs[lastIndex]) return lastIndex;
+
+    // Linearly interpolate between targetYs
+    for (let i = 0; i < lastIndex; i++) {
+      const yStart = targetYs[i];
+      const yEnd = targetYs[i + 1];
+      if (clampedY >= yStart && clampedY <= yEnd) {
+        return i + (clampedY - yStart) / (yEnd - yStart);
+      }
+    }
+    return lastIndex;
+  }
+
   function getSolutionProgress() {
     if (!solutionPanel) return 0;
     const r = solutionPanel.getBoundingClientRect();
@@ -126,7 +159,7 @@
     captionPanels.forEach((panel, i) => {
       const bubble = panel.querySelector('.comic-bubble-wrap');
       if (!bubble) return;
-      const active = Math.round(beat) === i && beat < CAPTION_COUNT;
+      const active = Math.abs(beat - i) < 0.6 && beat < CAPTION_COUNT;
       bubble.classList.toggle('visible', active);
     });
 
@@ -145,7 +178,7 @@
 
   function tick() {
     const t = getScrollT();
-    const beat = t * (panels.length - 1);
+    const beat = getBeat();
     const solutionP = getSolutionProgress();
 
     const delta = beat - smoothBeat;
@@ -155,7 +188,7 @@
     smoothSolution += (solutionP - smoothSolution) * 0.12;
 
     renderArt(smoothBeat, smoothSolution);
-    syncBubbles(smoothBeat, smoothSolution);
+    syncBubbles(beat, solutionP);
 
     if (progressBar) {
       progressBar.style.width = t * 100 + '%';

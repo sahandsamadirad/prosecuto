@@ -85,26 +85,24 @@ export default function JudgeApp() {
     [speak, scrollDown]
   );
 
-  const arrive = useCallback(
-    (i: number) => {
-      const p = PHASES[i];
-      if (!p) return;
-      setCur(i);
-      if (p.mode === 'auto' && p.who && p.text) {
-        charSpeak(p.who, p.text, p.docs, () => setTimeout(() => arrive(i + 1), 700));
-      } else if (p.mode === 'verdict' && p.who && p.text) {
-        charSpeak(p.who, p.text, undefined, () => setTimeout(() => setEnded(true), 600));
-      } else if (p.mode === 'user' && p.cue) {
-        charSpeak(p.cue.who, p.cue.text, undefined, () => setSuggest(p.suggest || []));
-      }
-    },
-    [charSpeak]
-  );
+  function arrive(i: number) {
+    const p = PHASES[i];
+    if (!p) return;
+    setCur(i);
+    if (p.mode === 'auto' && p.who && p.text) {
+      charSpeak(p.who, p.text, p.docs, () => setTimeout(() => arrive(i + 1), 700));
+    } else if (p.mode === 'verdict' && p.who && p.text) {
+      charSpeak(p.who, p.text, undefined, () => setTimeout(() => setEnded(true), 600));
+    } else if (p.mode === 'user' && p.cue) {
+      charSpeak(p.cue.who, p.cue.text, undefined, () => setSuggest(p.suggest || []));
+    }
+  }
 
   useEffect(() => {
     const t = setTimeout(() => arrive(0), 700);
     return () => clearTimeout(t);
-  }, [arrive]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(scrollDown, [messages, thinking, ended]);
 
