@@ -53,8 +53,8 @@ img, video { display: block; max-width: 100%; }
   text-transform: uppercase;
   color: var(--muted-2);
 }
-.serif { font-family: var(--serif); font-weight: 400; letter-spacing: -0.018em; }
-h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; margin: 0; }
+.serif { font-family: var(--serif); font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: 0.03em; margin: 0; }
 
 /* ---- buttons ---- */
 .btn {
