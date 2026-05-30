@@ -1,0 +1,390 @@
+/* ============================================================
+   PROSECUTO — Scroll comic story (Astro-inspired)
+   Fixed art layer + tall scroll panels + speech bubbles
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,700&display=swap');
+
+.comic-zone {
+  --comic-ink: #0d0d0f;
+  --comic-paper: #f5e6c8;
+  --comic-red: #e63946;
+  --comic-blue: #1d4ed8;
+  --comic-yellow: #ffd60a;
+  --comic-font: 'Bangers', Impact, sans-serif;
+  --comic-body: 'Comic Neue', 'Comic Sans MS', cursive;
+  position: relative;
+  background: var(--comic-ink);
+  isolation: isolate;
+}
+
+/* Sticky full-viewport art (scoped to this zone — unlike Astro’s global fixed video) */
+#comic-canvas-wrap {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  margin-bottom: -100vh;
+  margin-bottom: -100dvh;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#comic-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#comic-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 45%, transparent 30%, rgba(0,0,0,.55) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,.45) 0%, transparent 18%, transparent 82%, rgba(0,0,0,.5) 100%);
+}
+
+#comic-halftone {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.12;
+  mix-blend-mode: overlay;
+  background-image: radial-gradient(circle, #000 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+#comic-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  z-index: 45;
+  background: linear-gradient(90deg, var(--comic-red), var(--comic-yellow), var(--comic-blue));
+  box-shadow: 0 0 14px rgba(255, 214, 10, 0.45);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+#comic-progress.active {
+  opacity: 1;
+}
+
+/* scroll track sits above sticky art */
+#comic-scroll-track {
+  position: relative;
+  z-index: 3;
+}
+
+.comic-panel {
+  min-height: 125vh;
+  min-height: 125dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(72px, 12vh, 120px) clamp(16px, 4vw, 48px);
+}
+
+.comic-panel:first-child {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.comic-panel--finale {
+  min-height: 110vh;
+}
+
+/* speech / caption cards */
+.comic-bubble-wrap {
+  width: min(100%, 520px);
+  opacity: 0;
+  transform: translateY(48px) scale(0.96) rotate(-1deg);
+  transition: opacity 0.01ms, transform 0.01ms;
+  will-change: transform, opacity;
+}
+
+.comic-bubble-wrap.visible {
+  animation: bubble-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bubble-pop {
+  from {
+    opacity: 0;
+    transform: translateY(48px) scale(0.96) rotate(-1deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+.comic-bubble {
+  position: relative;
+  background: var(--comic-paper);
+  color: var(--comic-ink);
+  border: 4px solid var(--comic-ink);
+  border-radius: 28px;
+  padding: clamp(22px, 4vw, 34px) clamp(24px, 4.5vw, 40px);
+  box-shadow:
+    8px 8px 0 var(--comic-ink),
+    0 20px 50px rgba(0,0,0,.35);
+  font-family: var(--comic-body);
+  font-size: clamp(16px, 2.2vw, 19px);
+  line-height: 1.45;
+}
+
+.comic-bubble::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 18px solid transparent;
+}
+
+.comic-bubble-wrap--left {
+  margin-right: auto;
+  margin-left: clamp(0px, 6vw, 80px);
+}
+
+.comic-bubble-wrap--left .comic-bubble::after {
+  left: 42px;
+  bottom: -36px;
+  border-top-color: var(--comic-ink);
+  border-bottom: 0;
+}
+
+.comic-bubble-wrap--left .comic-bubble::before {
+  content: '';
+  position: absolute;
+  left: 46px;
+  bottom: -26px;
+  border: 14px solid transparent;
+  border-top-color: var(--comic-paper);
+  z-index: 1;
+}
+
+.comic-bubble-wrap--right {
+  margin-left: auto;
+  margin-right: clamp(0px, 6vw, 80px);
+}
+
+.comic-bubble-wrap--right .comic-bubble::after {
+  right: 42px;
+  bottom: -36px;
+  border-top-color: var(--comic-ink);
+  border-bottom: 0;
+}
+
+.comic-bubble-wrap--right .comic-bubble::before {
+  content: '';
+  position: absolute;
+  right: 46px;
+  bottom: -26px;
+  border: 14px solid transparent;
+  border-top-color: var(--comic-paper);
+  z-index: 1;
+}
+
+.comic-bubble-wrap--center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.comic-bubble-wrap--center .comic-bubble::after {
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -36px;
+  border-top-color: var(--comic-ink);
+  border-bottom: 0;
+}
+
+.comic-bubble-wrap--center .comic-bubble::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -26px;
+  border: 14px solid transparent;
+  border-top-color: var(--comic-paper);
+  z-index: 1;
+}
+
+.comic-chapter {
+  font-family: var(--mono, 'IBM Plex Mono', monospace);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--comic-red);
+  margin-bottom: 10px;
+}
+
+.comic-title {
+  font-family: var(--comic-font);
+  font-size: clamp(36px, 7vw, 58px);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.comic-title--fx {
+  color: var(--comic-yellow);
+  text-shadow:
+    3px 3px 0 var(--comic-ink),
+    -1px -1px 0 var(--comic-red);
+}
+
+.comic-quote {
+  font-family: var(--comic-font);
+  font-size: clamp(22px, 4vw, 32px);
+  letter-spacing: 0.06em;
+  color: var(--comic-blue);
+  margin: 0 0 8px;
+}
+
+.comic-bubble p {
+  margin: 0;
+  color: #2a2824;
+}
+
+.comic-bubble p + p {
+  margin-top: 10px;
+}
+
+.comic-sfx {
+  display: inline-block;
+  font-family: var(--comic-font);
+  font-size: clamp(28px, 5vw, 42px);
+  color: var(--comic-yellow);
+  text-shadow: 3px 3px 0 var(--comic-ink);
+  transform: rotate(-4deg);
+  margin-bottom: 6px;
+}
+
+/* section intro strip */
+.comic-intro {
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  padding: 48px var(--pad, 24px) 28px;
+  background: linear-gradient(to bottom, var(--bg, #F4F3EF), var(--comic-ink));
+  border-bottom: 4px solid var(--comic-ink);
+}
+
+.comic-intro .eyebrow {
+  color: var(--muted-2, #95918A);
+}
+
+.comic-intro h2 {
+  font-family: var(--serif, 'Newsreader', serif);
+  font-size: clamp(32px, 5vw, 52px);
+  color: var(--ink, #1F1D1A);
+  margin: 12px 0 8px;
+}
+
+.comic-intro p {
+  max-width: 42ch;
+  margin: 0 auto;
+  color: var(--muted, #6B675F);
+  font-size: 17px;
+}
+
+.comic-scroll-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  font-family: var(--comic-font);
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  color: var(--comic-ink);
+  background: var(--comic-yellow);
+  border: 3px solid var(--comic-ink);
+  padding: 10px 20px;
+  border-radius: 100px;
+  box-shadow: 4px 4px 0 var(--comic-ink);
+  animation: hint-bounce 2s ease-in-out infinite;
+}
+
+@keyframes hint-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+.comic-outro {
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  padding: 56px var(--pad, 24px);
+  background: linear-gradient(to bottom, var(--comic-ink), var(--bg, #F4F3EF));
+}
+
+.comic-outro p {
+  font-family: var(--serif, 'Newsreader', serif);
+  font-size: clamp(22px, 3.5vw, 34px);
+  color: var(--comic-paper);
+  max-width: 22ch;
+  margin: 0 auto 20px;
+  line-height: 1.2;
+}
+
+.comic-outro .btn {
+  box-shadow: 4px 4px 0 var(--comic-ink);
+}
+
+/* nav tweak when in comic zone */
+.nav.comic-active {
+  background: rgba(13, 13, 15, 0.75);
+  backdrop-filter: blur(12px);
+  border-bottom-color: rgba(255,255,255,.08);
+}
+.nav.comic-active .brand,
+.nav.comic-active .nav-links a:hover {
+  color: #f4f3ef;
+}
+.nav.comic-active .nav-links a {
+  color: rgba(244,243,239,.65);
+}
+.nav.comic-active .brand .mark {
+  background: var(--comic-yellow);
+}
+.nav.comic-active .brand .mark::after {
+  background: var(--comic-ink);
+  box-shadow: 0 4px 0 var(--comic-ink), 0 8px 0 var(--comic-ink);
+}
+.nav.comic-active .btn-ghost {
+  color: #f4f3ef;
+  border-color: rgba(255,255,255,.25);
+}
+
+@media (max-width: 720px) {
+  .comic-bubble-wrap--left,
+  .comic-bubble-wrap--right {
+    margin-inline: auto;
+  }
+  .comic-bubble {
+    box-shadow: 6px 6px 0 var(--comic-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comic-bubble-wrap.visible {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .comic-scroll-hint {
+    animation: none;
+  }
+}

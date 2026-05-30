@@ -6,6 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="comic-story.css">
 <title>Prosecuto — Dispute your red light camera ticket</title>
 <style>
 /* ============================================================
@@ -289,6 +290,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
 <nav class="nav" id="nav">
   <a class="brand" href="#top"><span class="mark"></span>Prosecuto</a>
   <div class="nav-links">
+    <a href="#story">Story</a>
     <a href="#overview">Overview</a>
     <a href="#paths">Dispute paths</a>
     <a href="#lawyer">Lawyer Mode</a>
@@ -316,7 +318,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
       </div>
       <div class="hero-actions reveal" style="transition-delay:.15s">
         <a class="btn btn-primary" href="Judge - Mock Trial.html">Run mock trial <span class="arrow">→</span></a>
-        <a class="btn btn-ghost" href="#overview">How it works</a>
+        <a class="btn btn-ghost" href="#story">Read the story</a>
       </div>
     </div>
 
@@ -337,6 +339,91 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
     </div>
   </div>
 </section>
+
+<!-- SCROLL COMIC STORY (Astro-style scroll panels + fixed art) -->
+<div id="comic-progress" aria-hidden="true"></div>
+
+<section class="comic-intro wrap" id="story">
+  <p class="eyebrow reveal">Scroll comic · 6 panels</p>
+  <h2 class="reveal serif">From flash to freedom.</h2>
+  <p class="reveal" style="transition-delay:.05s">One ticket. Six beats. Scroll to watch the story unfold — then see how Prosecuto fights back.</p>
+  <span class="comic-scroll-hint reveal" style="transition-delay:.1s">Scroll ↓</span>
+</section>
+
+<div class="comic-zone" id="comic-zone">
+  <div id="comic-canvas-wrap" aria-hidden="true">
+    <canvas id="comic-canvas"></canvas>
+    <div id="comic-vignette"></div>
+    <div id="comic-halftone"></div>
+  </div>
+
+  <div id="comic-scroll-track">
+    <article class="comic-panel" data-panel="0">
+      <div class="comic-bubble-wrap comic-bubble-wrap--left visible">
+        <div class="comic-bubble">
+          <p class="comic-chapter">Panel 01</p>
+          <p class="comic-quote">"Yeah! I'm flying!"</p>
+          <p>Life in the fast lane — until the city has other plans.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="comic-panel" data-panel="1">
+      <div class="comic-bubble-wrap comic-bubble-wrap--right">
+        <div class="comic-bubble">
+          <p class="comic-chapter">Panel 02</p>
+          <span class="comic-sfx">ZAP!</span>
+          <p>Red light camera. Owner liability. No demerits — but the fine still stings.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="comic-panel" data-panel="2">
+      <div class="comic-bubble-wrap comic-bubble-wrap--left">
+        <div class="comic-bubble">
+          <p class="comic-chapter">Panel 03</p>
+          <p class="comic-quote">"Oh no!"</p>
+          <p><strong>$300 fine</strong> lands in your lap. HTA s.144 doesn't care who was driving — yet.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="comic-panel" data-panel="3">
+      <div class="comic-bubble-wrap comic-bubble-wrap--right">
+        <div class="comic-bubble">
+          <p class="comic-chapter">Panel 04</p>
+          <p class="comic-quote">"Work your magic, app."</p>
+          <p>Prosecuto opens the playbook: grounds, scripts, and what to say in court.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="comic-panel" data-panel="4">
+      <div class="comic-bubble-wrap comic-bubble-wrap--left">
+        <div class="comic-bubble">
+          <p class="comic-chapter">Panel 05</p>
+          <p class="comic-quote">"This AI knows its stuff."</p>
+          <p><strong>Lawyer Mode</strong> builds your case. <strong>Judge Mode</strong> runs the full mock trial.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="comic-panel comic-panel--finale" data-panel="5">
+      <div class="comic-bubble-wrap comic-bubble-wrap--center">
+        <div class="comic-bubble">
+          <p class="comic-chapter">Panel 06</p>
+          <h3 class="comic-title comic-title--fx">Victory!</h3>
+          <p><strong>Case dismissed.</strong> You walked in prepared — because you rehearsed every beat.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="comic-outro wrap">
+    <p class="serif">Ready to write your ending?</p>
+    <a class="btn btn-primary" href="Lawyer - Alex.html">Prepare my case <span class="arrow">→</span></a>
+  </div>
+</div>
 
 <!-- 1 · OVERVIEW STATEMENT -->
 <section id="overview" class="statement">
@@ -530,5 +617,6 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02e
   addEventListener('load', revealInView);
   setTimeout(() => reveals.forEach(el => el.classList.add('in')), 1400);
 </script>
+<script src="comic-story.js" defer></script>
 </body>
 </html>
