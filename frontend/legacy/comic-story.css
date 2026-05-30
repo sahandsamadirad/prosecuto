@@ -173,12 +173,12 @@
   width: min(calc(380px + var(--solution-grow, 0) * 420px), 94vw);
   max-width: 920px;
   margin-inline: auto;
-  transform: translateY(calc(40px - var(--solution-grow, 0) * 40px)) scale(calc(0.82 + var(--solution-grow, 0) * 0.18));
+  transform: translateY(calc(40px - var(--solution-grow, 0) * 40px + var(--solution-grow, 0) * 12vh)) scale(calc(0.82 + var(--solution-grow, 0) * 0.18));
   transition: opacity 0.35s ease;
 }
 
 .comic-bubble-wrap--solution.visible {
-  transform: translateY(calc(20px - var(--solution-grow, 0) * 20px)) scale(calc(0.88 + var(--solution-grow, 0) * 0.12));
+  transform: translateY(calc(20px - var(--solution-grow, 0) * 20px + var(--solution-grow, 0) * 12vh)) scale(calc(0.88 + var(--solution-grow, 0) * 0.12));
 }
 
 .comic-bubble-wrap--solution .comic-bubble {

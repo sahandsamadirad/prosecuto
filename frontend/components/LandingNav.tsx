@@ -12,9 +12,9 @@ export default function LandingNav() {
     const onScroll = () => {
       const inComic = comicZone
         ? (() => {
-            const r = comicZone.getBoundingClientRect();
-            return r.top < 72 && r.bottom > 72;
-          })()
+          const r = comicZone.getBoundingClientRect();
+          return r.top < 72 && r.bottom > 72;
+        })()
         : false;
       nav.classList.toggle('solid', window.scrollY > 8);
       nav.classList.toggle('comic-active', !!inComic);
@@ -31,9 +31,6 @@ export default function LandingNav() {
         <span className="mark" />
         Prosecuto
       </Link>
-      <div className="nav-links">
-        <a href="#story">Story</a>
-      </div>
       <div className="nav-cta">
         <Link className="btn btn-ghost" href="/lawyer">
           Prepare my case
