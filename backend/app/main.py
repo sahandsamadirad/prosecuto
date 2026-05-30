@@ -24,12 +24,20 @@ log = structlog.get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from app.memory.session import get_session_manager
+
+    # Build the session store now so the Redis→in-memory fallback (and its log
+    # line) happens at startup, not on the first request.
+    manager = await get_session_manager()
+    app.state.session_manager = manager
     log.info(
         "prosecuto.startup",
         llm_model=settings.nim_llm_model,
         chroma_dir=str(settings.chroma_path),
+        session_backend=manager.backend,
     )
     yield
+    await manager.close()
     log.info("prosecuto.shutdown")
 
 
