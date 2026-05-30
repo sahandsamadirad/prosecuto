@@ -1,0 +1,102 @@
+"""BaseAgent — the common shape for every Lawyer/Judge Mode agent.
+
+Each agent is a single structured-output LLM call (ARCHITECTURE.md section 5),
+invoked by the orchestrator with the full :class:`SessionState`. Agents read the
+recent transcript + the populated case file from state so the user never repeats
+themselves, then return an :class:`AgentResult` carrying the updated state and
+the text the avatar will speak next.
+
+Agents never call each other — only the orchestrator routes between them.
+"""
+
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+
+from langchain_core.prompts import ChatPromptTemplate
+
+from app.orchestrator.state import SessionState
+from app.prompts.base import BASE_SYSTEM_PROMPT
+from app.schemas.case import TicketDetails
+
+
+@dataclass
+class AgentResult:
+    """What every agent returns."""
+
+    updated_state: SessionState
+    assistant_text: str
+    data: object | None = None  # the agent's structured output, for inspection/tests
+
+
+class BaseAgent(ABC):
+    name: str = "base"
+    character_prompt: str = ""
+
+    def __init__(self, llm, retriever=None) -> None:
+        self.llm = llm
+        self.retriever = retriever
+
+    @property
+    def system_prompt(self) -> str:
+        return BASE_SYSTEM_PROMPT + "\n\n" + self.character_prompt
+
+    @abstractmethod
+    async def run(self, state: SessionState) -> AgentResult: ...
+
+    # --- Shared prompt helpers --------------------------------------------
+
+    def format_history(self, state: SessionState, k: int = 10) -> str:
+        """Conversation window in the ARCHITECTURE §9 format."""
+        turns = state.recent_transcript(k)
+        if not turns:
+            return "(no conversation yet)"
+        lines = []
+        for t in turns:
+            ts = t.timestamp.strftime("%H:%M:%S")
+            lines.append(f"[{t.role}, {ts}] {t.content}")
+        return "\n".join(lines)
+
+    def format_case(self, state: SessionState) -> str:
+        """The 'Known case details' block threaded into every prompt."""
+        td = state.ticket_details or TicketDetails()
+        lines = ["## Known case details"]
+        fields = {
+            "Ticket type": td.ticket_type,
+            "Ticket date": td.ticket_date,
+            "Intersection": td.intersection,
+            "Municipality": td.municipality,
+            "Registered owner": td.vehicle_owner,
+            "Who was driving": td.who_was_driving,
+            "Ticket number": td.ticket_number,
+            "Fine amount": td.fine_amount,
+            "Deadline date": td.deadline_date,
+        }
+        for label, val in fields.items():
+            lines.append(f"- {label}: {val if val is not None else 'TBD'}")
+        if state.diagnosis:
+            d = state.diagnosis
+            lines.append(f"- Diagnosis: {d.sub_type} ({d.deadline_status})")
+        if state.chosen_path:
+            lines.append(f"- Chosen path: {state.chosen_path}")
+        return "\n".join(lines)
+
+    def retrieve_context(self, query: str, k: int = 8, n: int = 4, filters: dict | None = None) -> str:
+        """Retrieve and format passages for a prompt; '(no sources)' if none."""
+        if self.retriever is None:
+            return "(no sources retrieved)"
+        result = self.retriever.retrieve(query, k=k, n=n, filters=filters)
+        if not result.passages:
+            return "(no sources retrieved)"
+        return "\n\n---\n\n".join(
+            f"[{p.filename or p.source_path}] {p.content}" for p in result.passages
+        )
+
+    async def run_structured(self, output_model, human_template: str, variables: dict):
+        """Build ``system + human`` prompt and invoke with structured output."""
+        prompt = ChatPromptTemplate.from_messages(
+            [("system", self.system_prompt), ("human", human_template)]
+        )
+        chain = prompt | self.llm.with_structured_output(output_model)
+        return await chain.ainvoke(variables)
