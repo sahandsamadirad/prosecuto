@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/readme/prosecuto-demo.png" alt="Prosecuto product preview" width="920" />
+  <img src="docs/readme/prosecuto-landing.png" alt="Prosecuto landing page" width="920" />
 </p>
 
 ## Built at NVIDIA Spark Hack Toronto
@@ -44,7 +44,7 @@ Prosecuto turns an intimidating ticket dispute into a guided preparation workflo
 - **3D avatar interface** makes the experience feel more like a live consultation than a static form.
 
 <p align="center">
-  <img src="docs/readme/package-view.png" alt="Generated defence package view" width="780" />
+  <img src="docs/readme/prosecuto-lawyer.png" alt="Lawyer Mode case preparation screen" width="920" />
 </p>
 
 ## Why It Matters
@@ -191,7 +191,7 @@ frontend/
 ## Screens
 
 <p align="center">
-  <img src="docs/readme/judge-view.png" alt="Judge mode preview" width="780" />
+  <img src="docs/readme/prosecuto-judge.png" alt="Judge Mode Q&A preparation screen" width="920" />
 </p>
 
 ## Important Note
