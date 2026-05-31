@@ -31,6 +31,7 @@ class SufficientDataOutput(BaseModel):
 
 
 class SufficientDataAgent(BaseAgent):
+    thinking = False  # binary yes/no gate — no CoT needed
     name = "sufficient_data"
     character_prompt = SUFFICIENT_DATA
 

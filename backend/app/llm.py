@@ -18,12 +18,15 @@ from app.config import settings
 log = structlog.get_logger(__name__)
 
 
-def get_chat_llm(temperature: float = 0.0, **kwargs):
+def get_chat_llm(temperature: float = 0.0, thinking: bool = True, **kwargs):
     """Return a chat LLM instance routed to the configured provider.
 
     Args:
         temperature: 0.0 for deterministic critic/structured calls; raise for
             conversational agents that want some variety.
+        thinking: When False, disables chain-of-thought reasoning tokens on
+            Nemotron Super. Use for scripted/form-filling agents to skip the
+            200-800 token CoT overhead. Ignored on the NIM cloud path.
         **kwargs: forwarded to the underlying LangChain class.
     """
     use_local = (
@@ -48,6 +51,7 @@ def get_chat_llm(temperature: float = 0.0, **kwargs):
             model=settings.local_llm_model,
             endpoint=settings.local_llm_endpoint,
             temperature=temperature,
+            thinking=thinking,
         )
         return llm
 

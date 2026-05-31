@@ -66,9 +66,11 @@ class DefenceTheoryAgent(BaseAgent):
     @property
     def critics(self):
         if self._critics is None:
+            from app.llm import get_chat_llm
             from app.rag.critic import get_critics
 
-            self._critics = get_critics(self.llm)
+            # Critics are binary yes/no graders — CoT adds latency with no benefit.
+            self._critics = get_critics(get_chat_llm(thinking=False))
         return self._critics
 
     @property

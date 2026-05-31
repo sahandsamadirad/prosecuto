@@ -222,19 +222,23 @@ def get_lawyer_agents(llm=None, retriever=None) -> LawyerAgents:
     if llm is None:
         from app.llm import get_chat_llm
 
-        llm = get_chat_llm(temperature=0)
+        llm_think = get_chat_llm(temperature=0, thinking=True)
+        llm_fast = get_chat_llm(temperature=0, thinking=False)
+    else:
+        llm_think = llm
+        llm_fast = llm
     if retriever is None:
         from app.rag.retriever import get_retriever
 
         retriever = get_retriever()
 
     return LawyerAgents(
-        required_info=RequiredInfoAgent(llm),
-        ticket_diagnosis=TicketDiagnosisAgent(llm, retriever=retriever),
-        procedure_map=ProcedureMapAgent(llm, retriever=retriever),
-        sufficient_data=SufficientDataAgent(llm),
-        disclosure=DisclosureRequestAgent(llm, retriever=retriever),
-        defence_theory=DefenceTheoryAgent(llm, retriever=retriever),
+        required_info=RequiredInfoAgent(llm_fast),
+        ticket_diagnosis=TicketDiagnosisAgent(llm_think, retriever=retriever),
+        procedure_map=ProcedureMapAgent(llm_think, retriever=retriever),
+        sufficient_data=SufficientDataAgent(llm_fast),
+        disclosure=DisclosureRequestAgent(llm_think, retriever=retriever),
+        defence_theory=DefenceTheoryAgent(llm_think, retriever=retriever),
     )
 
 

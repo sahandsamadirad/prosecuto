@@ -40,6 +40,7 @@ class RequiredInfoOutput(BaseModel):
 class RequiredInfoAgent(BaseAgent):
     name = "required_info"
     character_prompt = REQUIRED_INFO
+    thinking = False  # form field extraction — no CoT needed
 
     async def run(self, state: SessionState) -> AgentResult:
         out: RequiredInfoOutput = await self.run_structured(

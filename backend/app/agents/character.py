@@ -24,6 +24,8 @@ Speak your part for this phase, in character, as natural courtroom speech (no ma
 class CharacterAgent(BaseAgent):
     """A speaking court character. Produces text for ``state.court_phase``."""
 
+    thinking = False  # scripted speech — no CoT needed
+
     async def run(self, state: SessionState) -> AgentResult:
         phase = state.court_phase or CourtPhase.IDLE
         text = await self.generate_text(

@@ -51,6 +51,10 @@ class AgentResult:
 class BaseAgent(ABC):
     name: str = "base"
     character_prompt: str = ""
+    # Set to False on agents that don't need chain-of-thought (scripted speech,
+    # form filling, binary gates). Injects /no_think into the system prompt so
+    # the Nemotron Super chat template skips the <think> block entirely.
+    thinking: bool = True
 
     def __init__(self, llm, retriever=None) -> None:
         self.llm = llm
@@ -58,7 +62,8 @@ class BaseAgent(ABC):
 
     @property
     def system_prompt(self) -> str:
-        return BASE_SYSTEM_PROMPT + "\n\n" + self.character_prompt
+        prefix = "" if self.thinking else "/no_think\n\n"
+        return prefix + BASE_SYSTEM_PROMPT + "\n\n" + self.character_prompt
 
     @abstractmethod
     async def run(self, state: SessionState) -> AgentResult: ...

@@ -1,7 +1,8 @@
-# Prosecuto backend dev stack: FastAPI + Redis + Chroma.
-# NIM (LLM/embed/rerank) and Riva/A2F containers are added later once the
-# hackathon hardware is available — for now those are reached over the network
-# via NVIDIA-hosted endpoints using NVIDIA_API_KEY.
+# Prosecuto backend dev stack: FastAPI + Redis.
+# On GX10: set LLM_PROVIDER=local, LOCAL_LLM_ENDPOINT=http://vllm:8001/v1 and
+# LOCAL_LLM_MODEL=nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-NVFP4 in .env, then
+# uncomment the vllm service below.
+# On laptop: LLM_PROVIDER=auto with NVIDIA_API_KEY routes to NIM cloud.
 
 services:
   api:
@@ -36,13 +37,31 @@ services:
     volumes:
       - redis-data:/data
 
-  # Chroma runs as a local persistent client inside the API container
-  # (data/chroma volume). A standalone chroma service can be added here if
-  # we move to client/server mode:
-  # chroma:
-  #   image: chromadb/chroma:latest
-  #   ports: ["8001:8000"]
-  #   volumes: ["./data/chroma:/chroma/chroma"]
+  # vLLM — uncomment on GX10 (requires NVIDIA GB10, CUDA 13, and HF_TOKEN in .env).
+  # Serves nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-NVFP4 via OpenAI-compatible API.
+  # vllm:
+  #   image: vllm/vllm-openai:latest
+  #   container_name: prosecuto-vllm
+  #   restart: unless-stopped
+  #   runtime: nvidia
+  #   ipc: host
+  #   ports:
+  #     - "8001:8000"
+  #   environment:
+  #     NVIDIA_VISIBLE_DEVICES: all
+  #     HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+  #   volumes:
+  #     - huggingface-cache:/root/.cache/huggingface
+  #   command: >
+  #     --model nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-NVFP4
+  #     --served-model-name nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-NVFP4
+  #     --dtype auto
+  #     --max-model-len 32768
+  #     --gpu-memory-utilization 0.85
+  #     --enable-chunked-prefill
+  #     --max-num-seqs 32
+  #     --port 8000
 
 volumes:
   redis-data:
+  # huggingface-cache:  # uncomment alongside the vllm service
