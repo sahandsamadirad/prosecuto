@@ -1,12 +1,19 @@
 # Prosecuto GX10 — vLLM only.
 # API and Redis run natively via systemd (prosecuto-api.service + redis-server).
 # Start: docker compose -f deploy/gx10/docker-compose.yml up -d
+#
+# Image: NVIDIA's official GB10/Blackwell-optimized vLLM (nvcr.io/nvidia/vllm:26.03.post1-py3).
+# Built with native SM12.0/SM12.1 kernels — replaces the generic vllm/vllm-openai image
+# which fell back to slow PTX JIT compilation on the GB10.
+#
+# One-time auth required before pulling:
+#   docker login nvcr.io   (use NGC API key from https://ngc.nvidia.com/setup/api-key)
 
 name: prosecuto-gx10
 
 services:
   vllm:
-    image: vllm/vllm-openai:latest
+    image: nvcr.io/nvidia/vllm:25.09-py3
     container_name: prosecuto-vllm
     restart: unless-stopped
     runtime: nvidia
@@ -18,7 +25,7 @@ services:
     volumes:
       - huggingface-cache:/root/.cache/huggingface
     command: >
-      nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-NVFP4
+      vllm serve nvidia/Llama-3_3-Nemotron-Super-49B-v1_5-NVFP4
       --dtype auto
       --max-model-len 32768
       --gpu-memory-utilization 0.70
