@@ -76,6 +76,7 @@ class Settings(BaseSettings):
     llm_provider: str = Field(default="auto", alias="LLM_PROVIDER")
     local_llm_endpoint: str = Field(default="", alias="LOCAL_LLM_ENDPOINT")
     local_llm_model: str = Field(default="qwen3.6-35b", alias="LOCAL_LLM_MODEL")
+    local_llm_api_key: str = Field(default="password", alias="LOCAL_LLM_API_KEY")
     # Timeout in seconds — 10s is fine for cloud NIM; local 35B needs more headroom.
     llm_timeout_seconds: float = Field(default=30.0, alias="LLM_TIMEOUT_SECONDS")
 

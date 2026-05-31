@@ -40,7 +40,7 @@ def get_chat_llm(temperature: float = 0.0, thinking: bool = True, **kwargs):
         llm = ChatOpenAI(
             model=settings.local_llm_model,
             base_url=settings.local_llm_endpoint,
-            api_key="local",
+            api_key=settings.local_llm_api_key,
             temperature=temperature,
             timeout=settings.llm_timeout_seconds,
             **kwargs,
