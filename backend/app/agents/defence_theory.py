@@ -74,21 +74,21 @@ class DefenceTheoryAgent(BaseAgent):
     @property
     def generate(self):
         if self._generate is None:
-            from app.rag.self_rag import make_llm_generator
+            from app.rag.self_rag import make_async_llm_generator
 
-            self._generate = make_llm_generator(self.llm)
+            self._generate = make_async_llm_generator(self.llm)
         return self._generate
 
     async def run(self, state: SessionState) -> AgentResult:
-        from app.rag.self_rag import run_self_rag
+        from app.rag.self_rag import arun_self_rag
 
         path = state.chosen_path or "trial"
         model = _PACKAGE_BY_PATH.get(path, TrialPrepPackage)
         query = self._build_query(state, path)
 
-        # Self-RAG is synchronous (NVIDIA sync calls) — keep the event loop free.
-        sr = await asyncio.to_thread(
-            run_self_rag, query, self.retriever, self.generate, self.critics
+        # Self-RAG now supports async natively (Phase 11 parallelized critics).
+        sr = await arun_self_rag(
+            query, self.retriever, self.generate, self.critics
         )
 
         context = self._format_passages(sr.passages)

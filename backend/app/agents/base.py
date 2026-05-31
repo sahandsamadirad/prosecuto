@@ -100,11 +100,11 @@ class BaseAgent(ABC):
             lines.append(f"- Chosen path: {state.chosen_path}")
         return "\n".join(lines)
 
-    def retrieve_context(self, query: str, k: int = 8, n: int = 4, filters: dict | None = None) -> str:
+    async def retrieve_context(self, query: str, k: int = 8, n: int = 4, filters: dict | None = None) -> str:
         """Retrieve and format passages for a prompt; '(no sources)' if none."""
         if self.retriever is None:
             return "(no sources retrieved)"
-        result = self.retriever.retrieve(query, k=k, n=n, filters=filters)
+        result = await self.retriever.aretrieve(query, k=k, n=n, filters=filters)
         if not result.passages:
             return "(no sources retrieved)"
         return "\n\n---\n\n".join(

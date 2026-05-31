@@ -16,6 +16,7 @@ directly.
 
 from __future__ import annotations
 
+import time
 import structlog
 
 from app.config import settings
@@ -58,12 +59,22 @@ class TavilyFallback:
             return []
 
         guided = query if "ontario" in query.lower() else query + _QUERY_SUFFIX
-        try:
-            resp = client.search(query=guided, max_results=self.max_results)
-        except Exception as exc:  # noqa: BLE001 — never hang/crash the pipeline
-            log.warning("tavily.search_failed", error=str(exc))
-            self._cache[query] = []
-            return []
+        
+        # Phase 11 hardening: retry with backoff.
+        max_retries = 2
+        resp = {}
+        for attempt in range(max_retries + 1):
+            try:
+                resp = client.search(query=guided, max_results=self.max_results)
+                break
+            except Exception as exc:  # noqa: BLE001
+                if attempt < max_retries:
+                    log.warning("tavily.retry", attempt=attempt + 1, error=str(exc))
+                    time.sleep(1 * (attempt + 1))
+                    continue
+                log.warning("tavily.search_failed", error=str(exc))
+                self._cache[query] = []
+                return []
 
         passages = [
             Passage(

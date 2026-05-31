@@ -37,7 +37,7 @@ class TicketDiagnosisAgent(BaseAgent):
 
     async def run(self, state: SessionState) -> AgentResult:
         query = "red light camera ticket deadline to dispute and AMPS process Ontario"
-        context = self.retrieve_context(query)
+        context = await self.retrieve_context(query)
 
         diagnosis: TicketDiagnosis = await self.run_structured(
             TicketDiagnosis,

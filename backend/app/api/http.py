@@ -36,6 +36,7 @@ async def get_manager() -> SessionManager:
 
 
 async def _require_session(session_id: str, mgr: SessionManager) -> SessionState:
+    structlog.contextvars.bind_contextvars(session_id=session_id)
     state = await mgr.load(session_id)
     if state is None:
         raise HTTPException(status_code=404, detail="session not found")

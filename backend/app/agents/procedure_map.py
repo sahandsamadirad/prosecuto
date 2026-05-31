@@ -36,7 +36,7 @@ class ProcedureMapAgent(BaseAgent):
     character_prompt = PROCEDURE_MAP
 
     async def run(self, state: SessionState) -> AgentResult:
-        context = self.retrieve_context(
+        context = await self.retrieve_context(
             "options to dispute a red light camera ticket: pay, early resolution, "
             "screening review, trial — Ontario procedure"
         )

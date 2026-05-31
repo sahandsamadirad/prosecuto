@@ -75,6 +75,7 @@ async def _send(ws: WebSocket, type_: str, session_id: str, payload, seq: int) -
 
 @router.websocket("/ws/text/{session_id}")
 async def text_channel(websocket: WebSocket, session_id: str) -> None:
+    structlog.contextvars.bind_contextvars(session_id=session_id)
     await websocket.accept()
     mgr = await get_session_manager()
 
@@ -174,6 +175,7 @@ def _state_summary(state: SessionState) -> StateUpdatePayload:
 @router.websocket("/ws/voice/out/{session_id}")
 async def voice_out(websocket: WebSocket, session_id: str) -> None:
     """Outbound: drains the session's queue (tts_audio + a2f_blendshapes) to the browser."""
+    structlog.contextvars.bind_contextvars(session_id=session_id)
     await websocket.accept()
     mgr = await get_session_manager()
     if await mgr.load(session_id) is None:
@@ -196,6 +198,7 @@ async def voice_in(websocket: WebSocket, session_id: str) -> None:
 
     Interim transcripts during avatar speech trigger a barge-in cancel.
     """
+    structlog.contextvars.bind_contextvars(session_id=session_id)
     await websocket.accept()
     mgr = await get_session_manager()
     state0 = await mgr.load(session_id)

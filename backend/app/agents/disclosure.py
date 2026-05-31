@@ -30,7 +30,7 @@ class DisclosureRequestAgent(BaseAgent):
     character_prompt = DISCLOSURE
 
     async def run(self, state: SessionState) -> AgentResult:
-        context = self.retrieve_context(
+        context = await self.retrieve_context(
             "Crown disclosure obligations Stinchcombe red light camera evidence "
             "certificate maintenance records Ontario"
         )

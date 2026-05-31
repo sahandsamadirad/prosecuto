@@ -52,19 +52,34 @@ class FakeRetriever:
             source=self._source,
         )
 
+    async def aretrieve(self, query, k=8, n=4, filters=None):
+        return self.retrieve(query, k=k, n=n, filters=filters)
+
     def _tavily_result(self, query):
         return RetrievalResult(query=query, passages=[], source="none")
+
+    async def atavily_result(self, query):
+        return self._tavily_result(query)
 
 
 class FakeCritics:
     def grade_relevance(self, q, p):
         return RelevanceGrade(relevant=True, reason="")
 
+    async def agrade_relevance(self, q, p):
+        return self.grade_relevance(q, p)
+
     def grade_grounding(self, a, ps):
         return GroundingGrade(grounded=True, unsupported_claims=[])
 
+    async def agrade_grounding(self, a, ps):
+        return self.grade_grounding(a, ps)
+
     def grade_adequacy(self, q, a):
         return AdequacyGrade(adequate=True, missing=[])
+
+    async def agrade_adequacy(self, q, a):
+        return self.grade_adequacy(q, a)
 
 
 def _passages():
@@ -172,11 +187,14 @@ async def test_disclosure_agent_produces_preliminary_package():
 
 async def test_defence_theory_builds_path_package_with_confidence():
     pkg = ERPackage(summary="Early resolution plan")
+    async def generate(q, passages, strict):
+        return "grounded analysis text"
+
     agent = DefenceTheoryAgent(
         FakeLLM({ERPackage: pkg}),
         retriever=FakeRetriever(_passages()),
         critics=FakeCritics(),
-        generate=lambda q, passages, strict: "grounded analysis text",
+        generate=generate,
     )
     state = _state(chosen_path="early_resolution")
     res = await agent.run(state)
@@ -188,9 +206,11 @@ async def test_defence_theory_builds_path_package_with_confidence():
 
 async def test_defence_theory_marks_preliminary_when_disclosure_requested():
     pkg = ERPackage(summary="plan")
+    async def generate(q, p, s):
+        return "text"
     agent = DefenceTheoryAgent(
         FakeLLM({ERPackage: pkg}), retriever=FakeRetriever(_passages()),
-        critics=FakeCritics(), generate=lambda q, p, s: "text",
+        critics=FakeCritics(), generate=generate,
     )
     state = _state(chosen_path="early_resolution", disclosure_requested=True)
     res = await agent.run(state)
@@ -237,10 +257,12 @@ async def test_end_to_end_lawyer_flow_produces_package():
     assert state.sufficient_data is True
 
     # 5. Sufficient → straight to Defence Theory (no disclosure)
+    async def generate(q, p, s):
+        return "grounded analysis"
     dt = DefenceTheoryAgent(
         FakeLLM({ERPackage: ERPackage(summary="ER plan", proposed_resolution="reduce fine")}),
         retriever=FakeRetriever(_passages()), critics=FakeCritics(),
-        generate=lambda q, p, s: "grounded analysis")
+        generate=generate)
     result = await dt.run(state)
     state = result.updated_state
 

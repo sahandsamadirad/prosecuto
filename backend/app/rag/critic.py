@@ -111,12 +111,22 @@ class Critics:
     def grade_relevance(self, query: str, passage: str) -> RelevanceGrade:
         return self._relevance.invoke({"query": query, "passage": passage})
 
+    async def agrade_relevance(self, query: str, passage: str) -> RelevanceGrade:
+        return await self._relevance.ainvoke({"query": query, "passage": passage})
+
     def grade_grounding(self, answer: str, passages: list[str]) -> GroundingGrade:
         joined = "\n\n---\n\n".join(passages)
         return self._grounding.invoke({"answer": answer, "passages": joined})
 
+    async def agrade_grounding(self, answer: str, passages: list[str]) -> GroundingGrade:
+        joined = "\n\n---\n\n".join(passages)
+        return await self._grounding.ainvoke({"answer": answer, "passages": joined})
+
     def grade_adequacy(self, question: str, answer: str) -> AdequacyGrade:
         return self._adequacy.invoke({"question": question, "answer": answer})
+
+    async def agrade_adequacy(self, question: str, answer: str) -> AdequacyGrade:
+        return await self._adequacy.ainvoke({"question": question, "answer": answer})
 
 
 def get_critics(llm=None) -> Critics:
