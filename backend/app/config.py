@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     corpus_dir: str = Field(
         default=str(_BACKEND_DIR / "data" / "corpus"), alias="CORPUS_DIR"
     )
+    uploads_dir: str = Field(
+        default=str(_BACKEND_DIR / "data" / "uploads"), alias="UPLOADS_DIR"
+    )
 
     # --- NVIDIA NIM model names ------------------------------------------
     nim_llm_model: str = Field(
@@ -85,6 +88,10 @@ class Settings(BaseSettings):
     @property
     def corpus_path(self) -> Path:
         return Path(self.corpus_dir).resolve()
+
+    @property
+    def uploads_path(self) -> Path:
+        return Path(self.uploads_dir).resolve()
 
 
 @lru_cache(maxsize=1)
