@@ -104,8 +104,15 @@ export default function JudgeApp() {
     });
   }, []);
 
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setMic(false);
+  }, []);
+
   const speak = useCallback((who: CharKey, text: string) => {
     if (capTimer.current) clearInterval(capTimer.current);
+    stopListening();
     setActive(who);
     setCaption({ who, text: '', show: true });
     speakText(text, {
@@ -116,7 +123,7 @@ export default function JudgeApp() {
         setTimeout(() => setSpeaking(false), 300);
       },
     });
-  }, []);
+  }, [stopListening]);
 
   const connect = useCallback(async () => {
     setStatus('connecting');
@@ -186,11 +193,11 @@ export default function JudgeApp() {
     connect();
     return () => {
       if (capTimer.current) clearInterval(capTimer.current);
-      recognitionRef.current?.abort();
+      stopListening();
       stopSpeech();
       socketRef.current?.close();
     };
-  }, [connect]);
+  }, [connect, stopListening]);
 
   useEffect(scrollDown, [messages, thinking, ended]);
 
@@ -198,12 +205,12 @@ export default function JudgeApp() {
     const val = (text ?? input).trim();
     if (!val || thinking || ended) return;
     if (capTimer.current) clearInterval(capTimer.current);
+    stopListening();
     stopSpeech();
     setSpeaking(false);
     setMessages((m) => [...m, { role: 'me', text: val, doc: null }]);
     setInput('');
     setSuggest([]);
-    setMic(false);
     setThinking(true);
     setStatus('thinking');
     if (!sendUserText(socketRef.current, sessionId, val)) {
@@ -215,13 +222,11 @@ export default function JudgeApp() {
 
   const toggleMic = async () => {
     if (mic) {
-      recognitionRef.current?.stop();
-      setMic(false);
+      stopListening();
       return;
     }
 
     try {
-      stopSpeech();
       await requestMicrophoneAccess();
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : 'Microphone permission was denied.');
@@ -238,6 +243,7 @@ export default function JudgeApp() {
       onEnd: () => setMic(false),
       onError: (message) => {
         setMic(false);
+        if (message === 'aborted' || message === 'no-speech') return;
         setError(message);
       },
     });

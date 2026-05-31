@@ -79,8 +79,15 @@ export default function LawyerApp() {
     });
   }, []);
 
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setMic(false);
+  }, []);
+
   const speak = useCallback((text: string) => {
     if (captionTimer.current) clearInterval(captionTimer.current);
+    stopListening();
     setCaption({ text: '', show: true });
     speakText(text, {
       onStart: () => setSpeaking(true),
@@ -90,7 +97,7 @@ export default function LawyerApp() {
         setTimeout(() => setSpeaking(false), 300);
       },
     });
-  }, []);
+  }, [stopListening]);
 
   const connect = useCallback(async () => {
     setStatus('connecting');
@@ -152,11 +159,11 @@ export default function LawyerApp() {
     connect();
     return () => {
       if (captionTimer.current) clearInterval(captionTimer.current);
-      recognitionRef.current?.abort();
+      stopListening();
       stopSpeech();
       socketRef.current?.close();
     };
-  }, [connect]);
+  }, [connect, stopListening]);
 
   useEffect(scrollDown, [messages, thinking]);
 
@@ -164,12 +171,12 @@ export default function LawyerApp() {
     const val = (text ?? input).trim();
     if (!val || thinking) return;
     if (captionTimer.current) clearInterval(captionTimer.current);
+    stopListening();
     stopSpeech();
     setSpeaking(false);
     setMessages((m) => [...m, { role: 'me', text: val, doc: null }]);
     setInput('');
     setSuggest([]);
-    setMic(false);
     setThinking(true);
     setStatus('thinking');
     if (!sendUserText(socketRef.current, sessionId, val)) {
@@ -193,13 +200,11 @@ export default function LawyerApp() {
 
   const toggleMic = async () => {
     if (mic) {
-      recognitionRef.current?.stop();
-      setMic(false);
+      stopListening();
       return;
     }
 
     try {
-      stopSpeech();
       await requestMicrophoneAccess();
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : 'Microphone permission was denied.');
@@ -216,6 +221,7 @@ export default function LawyerApp() {
       onEnd: () => setMic(false),
       onError: (message) => {
         setMic(false);
+        if (message === 'aborted' || message === 'no-speech') return;
         setError(message);
       },
     });
