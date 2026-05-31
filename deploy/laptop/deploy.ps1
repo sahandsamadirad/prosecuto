@@ -3,7 +3,8 @@
 param(
     [string]$RepoPath = "D:\Github\prosecuto",
     [string]$Gx10Ip = "100.113.13.93",
-    [int]$Port = 3000
+    [int]$Port = 3000,
+    [switch]$SkipPull
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,9 +21,11 @@ if (-not (Test-Path $RepoPath)) {
 
 Set-Location $RepoPath
 
-Write-Host "Pulling latest..."
-git fetch origin main
-git reset --hard origin/main
+if (-not $SkipPull) {
+    Write-Host "Pulling latest..."
+    git fetch origin main
+    git reset --hard origin/main
+}
 
 Set-Location "$RepoPath\frontend"
 
