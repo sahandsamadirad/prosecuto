@@ -29,6 +29,8 @@ dependencies = [
     "streamlit>=1.35.0",
     # Logging
     "structlog>=24.1.0",
+    # Local reranking
+    "sentence-transformers>=3.0.0",
 ]
 
 [project.optional-dependencies]

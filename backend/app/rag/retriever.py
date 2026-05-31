@@ -45,9 +45,41 @@ class IdentityReranker:
         return list(documents)
 
 
+class LocalCrossEncoderReranker:
+    """Local cross-encoder reranker using sentence-transformers.
+
+    Scores each (query, document) pair jointly — more accurate than cosine
+    similarity alone. Runs on GPU when available, CPU otherwise.
+    Model: BAAI/bge-reranker-v2-m3 (~560 MB, multilingual, strong on legal text).
+    """
+
+    name = "local:BAAI/bge-reranker-v2-m3"
+
+    def __init__(self, model_name: str = "BAAI/bge-reranker-v2-m3", top_n: int = 4) -> None:
+        import torch
+        from sentence_transformers import CrossEncoder
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self._model = CrossEncoder(model_name, device=device)
+        self._top_n = top_n
+        log.info("reranker.loaded", model=model_name, device=device)
+
+    def compress_documents(self, documents: list[Document], query: str) -> list[Document]:
+        if not documents:
+            return []
+        pairs = [(query, doc.page_content) for doc in documents]
+        scores = self._model.predict(pairs)
+        ranked = sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)
+        reranked = []
+        for score, doc in ranked[: self._top_n]:
+            doc.metadata["relevance_score"] = float(score)
+            reranked.append(doc)
+        return reranked
+
+
 def get_reranker(prefer: str | None = None, top_n: int = 4) -> Reranker:
-    """NVIDIARerank when a key is configured, else an identity passthrough."""
-    want_nvidia = prefer == "nvidia" or (prefer is None and bool(settings.nvidia_api_key))
+    """Local cross-encoder reranker, with NVIDIARerank when explicitly requested."""
+    want_nvidia = prefer == "nvidia" and bool(settings.nvidia_api_key)
     if want_nvidia:
         try:
             from langchain_nvidia_ai_endpoints import NVIDIARerank
@@ -60,9 +92,15 @@ def get_reranker(prefer: str | None = None, top_n: int = 4) -> Reranker:
             log.info("reranker.selected", provider=f"nvidia:{settings.nim_rerank_model}")
             return rr
         except Exception as exc:  # noqa: BLE001
-            if prefer == "nvidia":
-                raise
             log.warning("reranker.nvidia_unavailable", error=str(exc))
+
+    try:
+        rr = LocalCrossEncoderReranker(top_n=top_n)
+        log.info("reranker.selected", provider=rr.name)
+        return rr
+    except Exception as exc:  # noqa: BLE001
+        log.warning("reranker.local_unavailable", error=str(exc))
+
     log.info("reranker.selected", provider="identity")
     return IdentityReranker()
 
