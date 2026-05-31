@@ -14,7 +14,7 @@ import {
   type StateUpdatePayload,
   type WSMessage,
 } from '@/lib/prosecuto-api';
-import { createSpeechRecognition, speakText, stopSpeech } from '@/lib/browser-voice';
+import { createSpeechRecognition, requestMicrophoneAccess, speakText, stopSpeech } from '@/lib/browser-voice';
 import { DOCS, type DocKey } from './docs';
 import { ROLE_META } from './flow';
 
@@ -191,10 +191,18 @@ export default function LawyerApp() {
     send(c);
   };
 
-  const toggleMic = () => {
+  const toggleMic = async () => {
     if (mic) {
       recognitionRef.current?.stop();
       setMic(false);
+      return;
+    }
+
+    try {
+      stopSpeech();
+      await requestMicrophoneAccess();
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'Microphone permission was denied.');
       return;
     }
 
@@ -214,7 +222,12 @@ export default function LawyerApp() {
     recognitionRef.current = recognition;
     if (!recognition) return;
     setMic(true);
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (exc) {
+      setMic(false);
+      setError(exc instanceof Error ? exc.message : 'Could not start microphone speech recognition.');
+    }
   };
 
   return (

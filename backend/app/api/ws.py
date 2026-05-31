@@ -193,6 +193,7 @@ async def _run_turn(
                     websocket, "agent_text", session_id,
                     TextPayload(text=text, agent=node), seq,
                 )
+                break
 
         await mgr.save(state)
 

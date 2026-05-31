@@ -39,6 +39,15 @@ export function canUseSpeechRecognition(): boolean {
   return Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
 }
 
+export async function requestMicrophoneAccess(): Promise<void> {
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    throw new Error('This browser cannot access the microphone. Use Chrome on http://localhost:3000.');
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  stream.getTracks().forEach((track) => track.stop());
+}
+
 export function createSpeechRecognition(options: {
   onInterim?: (text: string) => void;
   onFinal: (text: string) => void;
@@ -46,7 +55,7 @@ export function createSpeechRecognition(options: {
   onError?: (message: string) => void;
 }) {
   if (!canUseSpeechRecognition()) {
-    options.onError?.('This browser does not support speech recognition. Chrome works best.');
+    options.onError?.('This browser does not support speech-to-text. Use Chrome; Firefox does not support this mic flow.');
     return null;
   }
 
@@ -54,7 +63,7 @@ export function createSpeechRecognition(options: {
   if (!Recognition) return null;
 
   const recognition = new Recognition();
-  recognition.continuous = false;
+  recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = 'en-CA';
 
@@ -96,9 +105,9 @@ export function speakText(
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'en-CA';
-  utterance.rate = 1.02;
-  utterance.pitch = 1;
-  utterance.voice = pickMaleEnglishVoice();
+  utterance.rate = 0.96;
+  utterance.pitch = 0.72;
+  utterance.voice = pickMaleEnglishVoiceOnly();
 
   utterance.onstart = () => options.onStart?.();
   utterance.onboundary = (event) => {
@@ -111,15 +120,13 @@ export function speakText(
   window.speechSynthesis.speak(utterance);
 }
 
-function pickMaleEnglishVoice(): SpeechSynthesisVoice | null {
+function pickMaleEnglishVoiceOnly(): SpeechSynthesisVoice | null {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return null;
 
   const english = voices.filter((voice) => voice.lang.toLowerCase().startsWith('en'));
   const maleHints = [
-    'male',
-    'man',
     'daniel',
     'david',
     'fred',
@@ -134,13 +141,7 @@ function pickMaleEnglishVoice(): SpeechSynthesisVoice | null {
     'guy',
   ];
 
-  return (
-    english.find((voice) => maleHints.some((hint) => voice.name.toLowerCase().includes(hint))) ||
-    english.find((voice) => voice.lang.toLowerCase() === 'en-ca') ||
-    english.find((voice) => voice.lang.toLowerCase().startsWith('en-us')) ||
-    english[0] ||
-    null
-  );
+  return english.find((voice) => maleHints.some((hint) => voice.name.toLowerCase().includes(hint))) || null;
 }
 
 export function stopSpeech() {
