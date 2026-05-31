@@ -140,7 +140,11 @@ export function speakText(
   utterance.lang = 'en-CA';
   utterance.rate = 0.96;
   utterance.pitch = 0.72;
-  utterance.voice = pickMaleEnglishVoiceOnly();
+  const voice = getMaleVoice();
+  if (voice) {
+    utterance.voice = voice;
+    utterance.lang = voice.lang; // keep engine from overriding with a default (female) voice
+  }
 
   utterance.onstart = () => options.onStart?.();
   utterance.onboundary = (event) => {
@@ -153,28 +157,87 @@ export function speakText(
   window.speechSynthesis.speak(utterance);
 }
 
-function pickMaleEnglishVoiceOnly(): SpeechSynthesisVoice | null {
+// One single male voice, reused for every character so the avatar never speaks
+// in a woman's voice and never switches voices mid-app.
+let cachedVoice: SpeechSynthesisVoice | null = null;
+
+const MALE_PRIORITY = [
+  'google uk english male',
+  'microsoft david',
+  'microsoft mark',
+  'microsoft guy',
+  'daniel',
+  'alex',
+  'fred',
+  'oliver',
+  'arthur',
+  'thomas',
+  'aaron',
+  'reed',
+  'rocko',
+  'george',
+  'matthew',
+  'ryan',
+  'guy',
+];
+
+const FEMALE_HINTS = [
+  'female',
+  'woman',
+  'samantha',
+  'victoria',
+  'karen',
+  'moira',
+  'tessa',
+  'fiona',
+  'zira',
+  'susan',
+  'allison',
+  'ava',
+  'serena',
+  'catherine',
+  'kate',
+  'zoe',
+  'veena',
+  'linda',
+  'heather',
+  'english female',
+];
+
+function isFemaleVoice(name: string): boolean {
+  const n = name.toLowerCase();
+  return FEMALE_HINTS.some((hint) => n.includes(hint));
+}
+
+function chooseMaleVoice(): SpeechSynthesisVoice | null {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return null;
 
-  const english = voices.filter((voice) => voice.lang.toLowerCase().startsWith('en'));
-  const maleHints = [
-    'daniel',
-    'david',
-    'fred',
-    'george',
-    'alex',
-    'aaron',
-    'arthur',
-    'oliver',
-    'thomas',
-    'matthew',
-    'ryan',
-    'guy',
-  ];
+  const english = voices.filter((v) => v.lang.toLowerCase().startsWith('en'));
+  const pool = english.length ? english : voices;
 
-  return english.find((voice) => maleHints.some((hint) => voice.name.toLowerCase().includes(hint))) || null;
+  for (const hint of MALE_PRIORITY) {
+    const hit = pool.find((v) => v.name.toLowerCase().includes(hint));
+    if (hit) return hit;
+  }
+  // No named male voice — at least avoid the known female ones.
+  return pool.find((v) => !isFemaleVoice(v.name)) || null;
+}
+
+function getMaleVoice(): SpeechSynthesisVoice | null {
+  if (cachedVoice) return cachedVoice;
+  cachedVoice = chooseMaleVoice();
+  return cachedVoice;
+}
+
+// Warm the voice list on load so even the very first (judge opening) utterance,
+// which fires immediately on connect, already has the male voice chosen.
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => {
+    cachedVoice = chooseMaleVoice();
+  };
 }
 
 export function stopSpeech() {
