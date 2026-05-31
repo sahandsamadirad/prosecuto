@@ -7,6 +7,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const DEFAULT_MODEL = '/assets/avatar-khoshtip.glb';
 const DEG = Math.PI / 180;
 
+// Perspective offsets to turn the face more to the right (towards the conversation panel)
+// while keeping the eyes focused forward/towards the camera for premium eye contact.
+const HEAD_YAW_OFFSET_DEG = 12;
+const NECK_YAW_OFFSET_DEG = 6;
+
 function pickClip(clips: THREE.AnimationClip[], keywords: string[]) {
   if (!clips?.length) return null;
   const lower = keywords.map((k) => k.toLowerCase());
@@ -60,6 +65,8 @@ export class AvatarStage {
   private _pointerSmooth = { x: 0, y: 0 };
   private _leftEyeBaseRot: THREE.Quaternion | null = null;
   private _rightEyeBaseRot: THREE.Quaternion | null = null;
+  private _headBaseRot: THREE.Quaternion | null = null;
+  private _neckBaseRot: THREE.Quaternion | null = null;
   scene: THREE.Scene;
   clock: THREE.Clock;
   mixer: THREE.AnimationMixer | null = null;
@@ -160,6 +167,8 @@ export class AvatarStage {
       if (bone.name === 'RightEye') this.rightEye = bone;
     });
 
+    if (this.headBone) this._headBaseRot = this.headBone.quaternion.clone();
+    if (this.neckBone) this._neckBaseRot = this.neckBone.quaternion.clone();
     if (this.leftEye) this._leftEyeBaseRot = this.leftEye.quaternion.clone();
     if (this.rightEye) this._rightEyeBaseRot = this.rightEye.quaternion.clone();
   }
@@ -174,28 +183,30 @@ export class AvatarStage {
     const px = this._pointerSmooth.x;
     const py = this._pointerSmooth.y;
 
-    const headYawDeg = -px * 14;
-    const headPitchDeg = py * 9;
+    // Keep neck turn perfectly static in its 3/4 listening posture
+    if (this.neckBone) {
+      this._euler.set(0, NECK_YAW_OFFSET_DEG * DEG, 0, 'YXZ');
+      this._offsetQuat.setFromEuler(this._euler);
+      this.neckBone.quaternion.multiply(this._offsetQuat);
+    }
+
+    // Keep head/face perspective perfectly static in its aligned listening posture (no mouse movement)
+    const headYawDeg = HEAD_YAW_OFFSET_DEG;
+    const headPitchDeg = 0;
     this._euler.set(headPitchDeg * DEG, headYawDeg * DEG, 0, 'YXZ');
     this._offsetQuat.setFromEuler(this._euler);
     this.headBone.quaternion.multiply(this._offsetQuat);
 
-    if (this.leftEye && this.rightEye) {
-      const eyeYawDeg = -px * 22;
-      const eyePitchDeg = py * 14;
+    if (this.leftEye && this.rightEye && this._leftEyeBaseRot && this._rightEyeBaseRot) {
+      // Natural, symmetric eye tracking centered in the middle of the sockets (no corner offsets)
+      // Maximum yaw is 6 degrees, pitch is 4.5 degrees, keeping pupils perfectly centered.
+      const eyeYawDeg = px * 6;
+      const eyePitchDeg = py * 4.5;
       this._euler.set(eyePitchDeg * DEG, eyeYawDeg * DEG, 0, 'YXZ');
       this._eyeQuat.setFromEuler(this._euler);
 
-      if (this._leftEyeBaseRot) {
-        this.leftEye.quaternion.copy(this._leftEyeBaseRot).multiply(this._eyeQuat);
-      } else {
-        this.leftEye.quaternion.multiply(this._eyeQuat);
-      }
-      if (this._rightEyeBaseRot) {
-        this.rightEye.quaternion.copy(this._rightEyeBaseRot).multiply(this._eyeQuat);
-      } else {
-        this.rightEye.quaternion.multiply(this._eyeQuat);
-      }
+      this.leftEye.quaternion.copy(this._leftEyeBaseRot).multiply(this._eyeQuat);
+      this.rightEye.quaternion.copy(this._rightEyeBaseRot).multiply(this._eyeQuat);
     }
   }
 
@@ -225,28 +236,20 @@ export class AvatarStage {
 
   _orientTowardCamera() {
     if (!this.pivot || !this.rig) return;
-    const candidates = [0, Math.PI, Math.PI / 2, -Math.PI / 2];
-    let bestRot = 0;
-    let bestScore = -Infinity;
-
-    for (const rot of candidates) {
-      this.pivot.rotation.y = rot;
-      this.rig.updateMatrixWorld(true);
-      const score = this._faceTowardCameraScore();
-      if (score > bestScore) {
-        bestScore = score;
-        bestRot = rot;
-      }
-    }
-
-    this.pivot.rotation.y = bestRot;
-    this.rig.updateMatrixWorld(true);
+    // Rotate the avatar's body slightly to the right (about 12.6 degrees) 
+    // to face the conversation panel, creating a premium 3/4 portrait view.
+    this.pivot.rotation.y = 0.22;
+    this.pivot.updateMatrixWorld(true);
   }
 
   _framePortrait() {
     if (!this.rig) return;
 
-    this.rig.updateMatrixWorld(true);
+    if (this.pivot) {
+      this.pivot.updateMatrixWorld(true);
+    } else {
+      this.rig.updateMatrixWorld(true);
+    }
 
     const full = new THREE.Box3().setFromObject(this.rig);
     const bodyH = full.max.y - full.min.y;
@@ -362,7 +365,20 @@ export class AvatarStage {
   _tickLoop() {
     if (this.disposed) return;
     const dt = Math.min(this.clock.getDelta(), 0.1);
+
+    // Reset tracking bones to their base/rest poses before updating the mixer,
+    // to prevent rotation offsets from accumulating frame-over-frame.
+    if (this.headBone && this._headBaseRot) {
+      this.headBone.quaternion.copy(this._headBaseRot);
+    }
+    if (this.neckBone && this._neckBaseRot) {
+      this.neckBone.quaternion.copy(this._neckBaseRot);
+    }
+
+    // Update the animation mixer (idle breathing, talking mouth, etc.)
     this.mixer?.update(dt);
+
+    // Apply cursor tracking offset on top of the animated pose
     this._applyCursorTracking(dt);
 
     if (this.headBone) {
