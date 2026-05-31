@@ -67,22 +67,55 @@ export function createSpeechRecognition(options: {
   recognition.interimResults = true;
   recognition.lang = 'en-CA';
 
+  // Don't send on the first final chunk — give the speaker time to pause and
+  // keep going. Commit the accumulated transcript only after a real silence.
+  const SILENCE_MS = 1800;
+  let finalBuffer = '';
+  let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const clearSilence = () => {
+    if (silenceTimer) {
+      clearTimeout(silenceTimer);
+      silenceTimer = null;
+    }
+  };
+
+  const commit = () => {
+    clearSilence();
+    const text = finalBuffer.trim();
+    finalBuffer = '';
+    if (text) options.onFinal(text);
+  };
+
   recognition.onresult = (event) => {
     let interim = '';
-    let finalText = '';
     for (let i = event.resultIndex; i < event.results.length; i += 1) {
       const text = event.results[i][0].transcript;
-      if (event.results[i].isFinal) finalText += text;
+      if (event.results[i].isFinal) finalBuffer += text + ' ';
       else interim += text;
     }
-    if (interim.trim()) options.onInterim?.(interim.trim());
-    if (finalText.trim()) options.onFinal(finalText.trim());
+    const preview = (finalBuffer + interim).trim();
+    if (preview) options.onInterim?.(preview);
+    clearSilence();
+    silenceTimer = setTimeout(commit, SILENCE_MS);
   };
 
   recognition.onerror = (event) => {
-    options.onError?.(event.error || 'Speech recognition failed.');
+    const err = event.error || 'Speech recognition failed.';
+    if (err === 'no-speech') return; // keep listening through quiet gaps
+    options.onError?.(err);
   };
-  recognition.onend = () => options.onEnd?.();
+  recognition.onend = () => {
+    commit(); // flush whatever was captured before the engine stopped
+    options.onEnd?.();
+  };
+
+  // Stopping should send what we have, not drop it.
+  const nativeStop = recognition.stop.bind(recognition);
+  recognition.stop = () => {
+    commit();
+    nativeStop();
+  };
 
   return recognition;
 }

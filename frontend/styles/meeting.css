@@ -3,8 +3,12 @@
    3D avatar stage (left) · transcript + chat + documents (right)
    ============================================================ */
 
+/* Lock the meeting pages to exactly one viewport — no page scroll, no gap.
+   Scoped via :has() so the scrolling landing page is unaffected. */
+html:has(.room), body:has(.room) { height: 100%; overflow: hidden; }
+
 .room {
-  height: 100vh; height: 100dvh; width: 100%;
+  height: 100vh; height: 100dvh; width: 100vw; max-width: 100%;
   display: grid; grid-template-columns: minmax(380px, 42%) 1fr;
   overflow: hidden;
   min-height: 0;
@@ -105,12 +109,30 @@
 }
 .caption-inner {
   background: var(--ink); color: var(--on-accent);
-  border: 3px solid var(--ink); border-radius: 12px; padding: 18px 20px; min-height: 58px;
+  border: 3px solid var(--ink); border-radius: 12px; padding: 18px 20px;
+  min-height: 58px;
+  /* Cap the height so a long answer scrolls internally instead of growing up
+     over the avatar's face. */
+  max-height: clamp(92px, 20vh, 184px); overflow-y: auto; overscroll-behavior: contain;
   font-size: 18px; line-height: 1.45; letter-spacing: -.01em;
   box-shadow: 4px 4px 0 var(--accent);
   opacity: 0; transform: translateY(8px); transition: opacity .4s, transform .4s;
 }
 .caption-inner.show { opacity: 1; transform: none; }
+.caption-inner::-webkit-scrollbar { width: 7px; }
+.caption-inner::-webkit-scrollbar-thumb { background: #ffffff33; border-radius: 100px; }
+
+/* Stop button to interrupt the avatar mid-sentence */
+.caption-stop {
+  position: absolute; top: 30px; right: 34px; z-index: 4;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: #fff; background: var(--accent-red);
+  border: 2px solid var(--ink); border-radius: 100px; padding: 5px 11px; cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.caption-stop:hover { transform: translateY(-1px); }
+.caption-stop svg { display: block; }
 .caption .spk { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #b9b1a0; display: block; margin-bottom: 8px; }
 /* speaking waveform */
 .wave { display: inline-flex; align-items: flex-end; gap: 3px; height: 14px; margin-left: 8px; vertical-align: middle; }

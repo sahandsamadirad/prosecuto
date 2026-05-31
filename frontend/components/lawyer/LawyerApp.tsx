@@ -15,6 +15,7 @@ import {
   type WSMessage,
 } from '@/lib/prosecuto-api';
 import { createSpeechRecognition, requestMicrophoneAccess, speakText, stopSpeech } from '@/lib/browser-voice';
+import { stripFormatting } from '@/lib/text';
 import { DOCS, type DocKey } from './docs';
 import { ROLE_META } from './flow';
 
@@ -68,7 +69,14 @@ export default function LawyerApp() {
   const socketRef = useRef<WebSocket | null>(null);
   const recognitionRef = useRef<ReturnType<typeof createSpeechRecognition> | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
+  const captionRef = useRef<HTMLDivElement>(null);
   const captionTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopSpeaking = useCallback(() => {
+    if (captionTimer.current) clearInterval(captionTimer.current);
+    stopSpeech();
+    setSpeaking(false);
+  }, []);
 
   const sharedDocs = Array.from(new Set(messages.filter((m) => m.doc).map((m) => m.doc!)));
 
@@ -126,10 +134,11 @@ export default function LawyerApp() {
         const message = JSON.parse(event.data) as WSMessage;
         const agentText = asAgentText(message);
         if (agentText) {
+          const clean = stripFormatting(agentText.text);
           setThinking(false);
           setStatus('connected');
-          setMessages((m) => [...m, { role: 'alex', text: agentText.text, doc: docForText(agentText.text) }]);
-          speak(agentText.text);
+          setMessages((m) => [...m, { role: 'alex', text: clean, doc: docForText(clean) }]);
+          speak(clean);
           scrollDown();
           return;
         }
@@ -167,6 +176,12 @@ export default function LawyerApp() {
 
   useEffect(scrollDown, [messages, thinking]);
 
+  // Keep the caption pinned to its newest line so it never grows past its box.
+  useEffect(() => {
+    const el = captionRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [caption.text]);
+
   const send = (text?: string) => {
     const val = (text ?? input).trim();
     if (!val || thinking) return;
@@ -203,6 +218,9 @@ export default function LawyerApp() {
       stopListening();
       return;
     }
+
+    // Barge-in: starting the mic interrupts Alex so she listens to the user.
+    stopSpeaking();
 
     try {
       await requestMicrophoneAccess();
@@ -260,7 +278,13 @@ export default function LawyerApp() {
         </div>
 
         <div className="caption">
-          <div className={'caption-inner' + (caption.show ? ' show' : '')}>
+          {speaking && (
+            <button className="caption-stop" type="button" onClick={stopSpeaking} title="Stop Alex">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2" /></svg>
+              Stop
+            </button>
+          )}
+          <div className={'caption-inner' + (caption.show ? ' show' : '')} ref={captionRef}>
             <span className="spk">
               Alex
               <span className="wave">
