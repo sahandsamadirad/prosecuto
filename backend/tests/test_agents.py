@@ -110,7 +110,14 @@ async def test_required_info_agent_merges_details_and_skips():
         complete=False,
     )
     agent = RequiredInfoAgent(FakeLLM({RequiredInfoOutput: out}))
-    res = await agent.run(_state())
+    # The grounding guard only keeps facts/skips the user actually stated, so the
+    # transcript must evidence the camera ticket, the date, and the skipped fine.
+    state = SessionState(session_id="s1", mode="lawyer")
+    state.add_turn(
+        "user",
+        "I got a red light camera ticket on November 18 2025. I don't know the fine amount.",
+    )
+    res = await agent.run(state)
     assert res.assistant_text == "What intersection was it at?"
     assert res.updated_state.ticket_details.ticket_type == "camera_issued"
     assert "fine_amount" in res.updated_state.ticket_details.skipped
@@ -223,11 +230,17 @@ async def test_defence_theory_marks_preliminary_when_disclosure_requested():
 
 async def test_end_to_end_lawyer_flow_produces_package():
     state = SessionState(session_id="e2e", mode="lawyer")
-    state.add_turn("user", "I got a red light camera ticket")
+    # Evidence every field so the grounding guard keeps the full ticket details.
+    state.add_turn(
+        "user",
+        "I got a red light camera ticket number RLC123 at King and Bay in Toronto on "
+        "November 18 2025. The fine is 325 dollars and my deadline is January 1 2026. "
+        "I am the owner and it was me driving.",
+    )
 
     complete = TicketDetails(
-        ticket_type="camera_issued", ticket_date=date(2025, 11, 18), intersection="King & Bay",
-        vehicle_owner="self", who_was_driving="self", ticket_number="RLC123",
+        ticket_type="camera_issued", ticket_date=date(2025, 11, 18), intersection="King and Bay",
+        municipality="Toronto", vehicle_owner="me", who_was_driving="me", ticket_number="RLC123",
         fine_amount=325.0, deadline_date=date(2026, 1, 1),
     )
 
@@ -272,5 +285,5 @@ async def test_end_to_end_lawyer_flow_produces_package():
     assert pkg.confidence in ("high", "medium", "low")
     assert pkg.citations
     # Memory intact across all agents: the original opening turn survives.
-    assert state.transcript[0].content == "I got a red light camera ticket"
+    assert state.transcript[0].content.startswith("I got a red light camera ticket")
     assert state.current_agent == "defence_theory"

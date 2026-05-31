@@ -14,6 +14,7 @@ import {
   type WSMessage,
 } from '@/lib/prosecuto-api';
 import { createSpeechRecognition, requestMicrophoneAccess, speakText, stopSpeech } from '@/lib/browser-voice';
+import { stripFormatting } from '@/lib/text';
 import { CHARS, DOCS, PHASES, VERDICT, type CharKey, type JudgeDocKey } from './data';
 
 const AvatarMount = dynamic(() => import('@/components/AvatarMount'), { ssr: false });
@@ -93,7 +94,14 @@ export default function JudgeApp() {
   const socketRef = useRef<WebSocket | null>(null);
   const recognitionRef = useRef<ReturnType<typeof createSpeechRecognition> | null>(null);
   const tRef = useRef<HTMLDivElement>(null);
+  const captionRef = useRef<HTMLDivElement>(null);
   const capTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopSpeaking = useCallback(() => {
+    if (capTimer.current) clearInterval(capTimer.current);
+    stopSpeech();
+    setSpeaking(false);
+  }, []);
 
   const sharedDocs = Array.from(new Set(messages.filter((m) => m.doc).map((m) => m.doc!)));
 
@@ -156,10 +164,11 @@ export default function JudgeApp() {
         const agentText = asAgentText(message);
         if (agentText) {
           const role = speakerToRole(agentText.agent);
+          const clean = stripFormatting(agentText.text);
           setThinking(false);
           setStatus('connected');
-          setMessages((m) => [...m, { role, text: agentText.text, doc: docForCourtText(agentText.text) }]);
-          speak(role, agentText.text);
+          setMessages((m) => [...m, { role, text: clean, doc: docForCourtText(clean) }]);
+          speak(role, clean);
           scrollDown();
           return;
         }
@@ -201,6 +210,11 @@ export default function JudgeApp() {
 
   useEffect(scrollDown, [messages, thinking, ended]);
 
+  useEffect(() => {
+    const el = captionRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [caption.text]);
+
   const send = (text?: string) => {
     const val = (text ?? input).trim();
     if (!val || thinking || ended) return;
@@ -225,6 +239,9 @@ export default function JudgeApp() {
       stopListening();
       return;
     }
+
+    // Barge-in: starting the mic interrupts the court so it listens to the user.
+    stopSpeaking();
 
     try {
       await requestMicrophoneAccess();
@@ -286,7 +303,13 @@ export default function JudgeApp() {
         </div>
 
         <div className="caption">
-          <div className={'caption-inner' + (caption.show ? ' show' : '')}>
+          {speaking && (
+            <button className="caption-stop" type="button" onClick={stopSpeaking} title="Stop">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2" /></svg>
+              Stop
+            </button>
+          )}
+          <div className={'caption-inner' + (caption.show ? ' show' : '')} ref={captionRef}>
             <span className="spk">
               {CHARS[caption.who]?.nm}
               <span className="wave">

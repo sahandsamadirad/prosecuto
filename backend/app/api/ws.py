@@ -78,7 +78,7 @@ def _fast_judge_graph():
 
     from app.llm import get_chat_llm
 
-    llm = get_chat_llm(temperature=0.3)
+    llm = get_chat_llm(temperature=0.0)
     return build_judge_graph(get_judge_characters(llm=llm, retriever=EmptyRetriever()), MemorySaver())
 
 
@@ -193,7 +193,6 @@ async def _run_turn(
                     websocket, "agent_text", session_id,
                     TextPayload(text=text, agent=node), seq,
                 )
-                break
 
         await mgr.save(state)
 

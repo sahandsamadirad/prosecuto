@@ -52,7 +52,8 @@ async def _drive(graph, session, msg=None):
     return out
 
 
-async def test_full_mock_trial_runs_to_feedback():
+async def test_short_trial_one_dialogue_then_verdict():
+    """Deterministic short trial: opening beats → one defence turn → verdict+feedback."""
     graph = _graph()
     s = _session()
 
@@ -61,28 +62,8 @@ async def test_full_mock_trial_runs_to_feedback():
     assert [sp for sp, _ in t] == ["court_clerk", "court_clerk", "judge", "crown_prosecutor"]
     assert s.court_phase == CourtPhase.DEFENCE_OPENING
 
-    # Defendant opens → CROWN_CASE → pause at DEFENCE_CROSS_CROWN.
-    t = await _drive(graph, s, "My opening statement, Your Worship.")
-    assert [sp for sp, _ in t] == ["crown_prosecutor"]
-    assert s.court_phase == CourtPhase.DEFENCE_CROSS_CROWN
-
-    # Defendant cross-examines → next beat is DEFENCE_CASE (also user) → no speech.
-    t = await _drive(graph, s, "Officer, was the camera calibrated?")
-    assert t == []
-    assert s.court_phase == CourtPhase.DEFENCE_CASE
-
-    # Defendant presents case → crown cross-examines, then pauses for the answer.
-    t = await _drive(graph, s, "Here is my account of events.")
-    assert [sp for sp, _ in t] == ["crown_prosecutor"]
-    assert s.court_phase == CourtPhase.CROWN_CLOSING  # advanced past the cross
-
-    # Defendant answers the cross → CROWN_CLOSING → pause at DEFENCE_CLOSING.
-    t = await _drive(graph, s, "I was not the driver that day.")
-    assert [sp for sp, _ in t] == ["crown_prosecutor"]
-    assert s.court_phase == CourtPhase.DEFENCE_CLOSING
-
-    # Defendant closes → VERDICT then FEEDBACK (judge breaks character) → DONE.
-    t = await _drive(graph, s, "In closing, the Crown has not met its burden.")
+    # The defendant's single dialogue → straight to VERDICT then FEEDBACK → DONE.
+    t = await _drive(graph, s, "My defence, Your Worship: I was not the driver.")
     assert [sp for sp, _ in t] == ["judge", "judge"]
     assert "verdict" in t[0][1]
     assert "feedback" in t[1][1]
@@ -126,6 +107,7 @@ async def test_resume_trial_from_reloaded_state():
 
     reloaded = SessionState.model_validate_json(s.model_dump_json())
     graph2 = _graph()
-    t = await _drive(graph2, reloaded, "My opening.")
-    assert [sp for sp, _ in t] == ["crown_prosecutor"]
-    assert reloaded.court_phase == CourtPhase.DEFENCE_CROSS_CROWN
+    # After reload, the single defence dialogue drives straight to verdict+feedback.
+    t = await _drive(graph2, reloaded, "My defence, Your Worship.")
+    assert [sp for sp, _ in t] == ["judge", "judge"]
+    assert reloaded.court_phase == CourtPhase.DONE

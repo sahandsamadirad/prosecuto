@@ -61,6 +61,9 @@ USER_PHASES = {
 # Agent phases after which we still pause for a user response.
 PAUSE_AFTER = {CourtPhase.CROWN_CROSS_DEFENCE}
 
+# Deterministic short trial: one defendant dialogue, then move to the verdict.
+MAX_COURT_DIALOGS = 1
+
 # Which character speaks each agent phase.
 SPEAKER = {
     CourtPhase.CLERK_CALL_TO_ORDER: "clerk",
@@ -181,7 +184,18 @@ async def astream_court_turn(
         session.court_transcript.append(
             Turn(role="user", content=user_message, agent="defence")
         )
-        if session.court_phase in USER_PHASES:
+        # Deterministic short trial: after the defendant's allotted dialogue(s),
+        # go straight to the verdict instead of walking every court phase.
+        defence_turns = sum(
+            1 for t in (session.court_transcript or []) if t.role == "user"
+        )
+        if defence_turns >= MAX_COURT_DIALOGS and session.court_phase not in (
+            CourtPhase.VERDICT,
+            CourtPhase.FEEDBACK,
+            CourtPhase.DONE,
+        ):
+            session.court_phase = CourtPhase.VERDICT
+        elif session.court_phase in USER_PHASES:
             session.court_phase = next_phase(session.court_phase)
 
     config = {"configurable": {"thread_id": thread_id or session.session_id}}
@@ -200,7 +214,7 @@ def get_judge_characters(llm=None, retriever=None) -> JudgeCharacters:
     if llm is None:
         from app.llm import get_chat_llm
 
-        llm = get_chat_llm(temperature=0.3)  # a little warmth for courtroom voices
+        llm = get_chat_llm(temperature=0.0)  # deterministic courtroom voices
     if retriever is None:
         from app.rag.retriever import get_retriever
 
