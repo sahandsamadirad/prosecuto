@@ -11,12 +11,13 @@ IMPLEMENTATION_PLAN.md Phase 2 "done when":
 
 from __future__ import annotations
 
+import pytest
 from langchain_core.documents import Document
 
 from app.rag.critic import AdequacyGrade, Critics, GroundingGrade, RelevanceGrade
 from app.rag.results import Passage
 from app.rag.retriever import IdentityReranker, ProsecutoRetriever
-from app.rag.self_rag import make_llm_generator, run_self_rag
+from app.rag.self_rag import arun_self_rag, make_async_llm_generator, make_llm_generator, run_self_rag
 from app.rag.tavily_fallback import TavilyFallback
 
 
@@ -45,6 +46,9 @@ class FakeCritics:
         self.relevance_calls += 1
         return RelevanceGrade(relevant=self._relevant, reason="fake")
 
+    async def agrade_relevance(self, query, passage):
+        return self.grade_relevance(query, passage)
+
     def grade_grounding(self, answer, passages):
         self.grounding_calls += 1
         return GroundingGrade(
@@ -52,8 +56,14 @@ class FakeCritics:
             unsupported_claims=[] if self._grounded else ["x"],
         )
 
+    async def agrade_grounding(self, answer, passages):
+        return self.grade_grounding(answer, passages)
+
     def grade_adequacy(self, question, answer):
         return AdequacyGrade(adequate=self._adequate, missing=[] if self._adequate else ["y"])
+
+    async def agrade_adequacy(self, question, answer):
+        return self.grade_adequacy(question, answer)
 
 
 class FakeTavily(TavilyFallback):
@@ -204,4 +214,43 @@ def test_make_llm_generator_uses_passages():
     fake_llm = RunnableLambda(lambda _: FakeMsg())
     gen = make_llm_generator(fake_llm)
     out = gen("q", [Passage(content="c", filename="f")], strict=False)
+    assert out == "generated"
+
+@pytest.mark.asyncio
+async def test_aretrieve_parallelizes_grading():
+    vs = FakeVectorStore([(_doc("p1"), 0.1), (_doc("p2"), 0.2)])
+    critics = FakeCritics(relevant=True)
+    retr = ProsecutoRetriever(vs, IdentityReranker(), critics, FakeTavily([]))
+    res = await retr.aretrieve("q", k=8, n=2)
+    assert len(res.passages) == 2
+    assert critics.relevance_calls == 2
+
+
+@pytest.mark.asyncio
+async def test_arun_self_rag_happy_path():
+    vs = FakeVectorStore([(_doc("s144 text"), 0.1)])
+    critics = FakeCritics(relevant=True, grounded=True, adequate=True)
+    retr = ProsecutoRetriever(vs, IdentityReranker(), critics, FakeTavily([]))
+
+    async def generate(query, passages, strict):
+        return "grounded answer"
+
+    res = await arun_self_rag("q", retr, generate, critics, max_retries=2)
+    assert res.confidence == "high"
+    assert res.source == "rag"
+
+
+@pytest.mark.asyncio
+async def test_make_async_llm_generator_works():
+    from langchain_core.runnables import RunnableLambda
+
+    class FakeMsg:
+        content = "generated"
+
+    async def _aimp(x):
+        return FakeMsg()
+
+    fake_llm = RunnableLambda(_aimp)
+    gen = make_async_llm_generator(fake_llm)
+    out = await gen("q", [Passage(content="c", filename="f")], strict=False)
     assert out == "generated"

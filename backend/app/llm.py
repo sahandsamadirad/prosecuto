@@ -37,6 +37,7 @@ def get_chat_llm(temperature: float = 0.0, **kwargs):
         model=settings.nim_llm_model,
         api_key=settings.nvidia_api_key,
         temperature=temperature,
+        timeout=LLM_TIMEOUT_SECONDS,
         **kwargs,
     )
     log.info("llm.selected", model=settings.nim_llm_model, temperature=temperature)

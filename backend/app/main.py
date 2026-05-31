@@ -18,7 +18,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.logging_config import configure_logging
 
+configure_logging()
 log = structlog.get_logger(__name__)
 
 
@@ -58,17 +60,8 @@ app.add_middleware(
 )
 
 
-@app.get("/api/health", tags=["ops"])
-async def health() -> dict[str, str]:
-    """Liveness check.
+from app.api import http as http_router  # noqa: E402
+from app.api import ws as ws_router  # noqa: E402
 
-    Phase 0: returns a static OK. Phase 7 expands this to ping Redis,
-    Chroma, and the NIM endpoints.
-    """
-    return {"status": "ok"}
-
-
-# Routers mounted in later phases:
-# from app.api import http as http_router, ws as ws_router
-# app.include_router(http_router.router)
-# app.include_router(ws_router.router)
+app.include_router(http_router.router)
+app.include_router(ws_router.router)

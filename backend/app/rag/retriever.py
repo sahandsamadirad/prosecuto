@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
+import asyncio
 import structlog
 from langchain_core.documents import Document
 
@@ -89,27 +90,18 @@ class ProsecutoRetriever:
         filters: dict | None = None,
         grade: bool = True,
     ) -> RetrievalResult:
-        """Return reranked, relevance-graded passages for ``query``.
-
-        Args:
-            k: initial Chroma retrieval depth.
-            n: passages kept after reranking.
-            filters: optional Chroma metadata ``where`` clause.
-            grade: run the relevance critic (set False for a raw retrieve).
-        """
-        # 1. Chroma similarity search, top-k.
+        """Return reranked, relevance-graded passages for ``query``."""
+        # Sync version calls async version in a new event loop or use asyncio.run
+        # But wait, it's better to just implement it as is if we want to keep sync compatibility.
+        # Actually, let's implement aretrieve properly.
         scored = self.vectorstore.similarity_search_with_score(query, k=k, filter=filters)
         if not scored:
-            log.info("retriever.empty_chroma", query=query)
             return self._tavily_result(query)
 
         docs = [d for d, _ in scored]
         sim_scores = {id(d): s for d, s in scored}
-
-        # 2. Rerank to top-n.
         reranked = self.reranker.compress_documents(documents=docs, query=query)[:n]
 
-        # 3. Relevance critic — drop irrelevant passages.
         kept: list[Passage] = []
         for doc in reranked:
             if grade:
@@ -119,10 +111,55 @@ class ProsecutoRetriever:
             score = doc.metadata.get("relevance_score", sim_scores.get(id(doc)))
             kept.append(Passage.from_document(doc, score=score))
 
+        if not kept:
+            return self._tavily_result(query)
+
+        return RetrievalResult(query=query, passages=kept, source="rag", scores=[p.score or 0.0 for p in kept])
+
+    async def aretrieve(
+        self,
+        query: str,
+        k: int = 8,
+        n: int = 4,
+        filters: dict | None = None,
+        grade: bool = True,
+    ) -> RetrievalResult:
+        """Async version of retrieve: parallelizes relevance grading."""
+        # 1. Chroma similarity search (usually sync, but we use it as is)
+        scored = await asyncio.to_thread(
+            self.vectorstore.similarity_search_with_score, query, k=k, filter=filters
+        )
+        if not scored:
+            log.info("retriever.empty_chroma", query=query)
+            return await self.atavily_result(query)
+
+        docs = [d for d, _ in scored]
+        sim_scores = {id(d): s for d, s in scored}
+
+        # 2. Rerank to top-n (most rerankers have async, but NVIDIARerank is usually wrapped)
+        # Use asyncio.to_thread if reranker.compress_documents is blocking.
+        # Actually, NVIDIARerank in langchain supports acompress_documents.
+        if hasattr(self.reranker, "acompress_documents"):
+            reranked = (await self.reranker.acompress_documents(documents=docs, query=query))[:n]
+        else:
+            reranked = (await asyncio.to_thread(self.reranker.compress_documents, documents=docs, query=query))[:n]
+
+        # 3. Parallel relevance critic.
+        if not grade:
+            kept = [Passage.from_document(doc, score=doc.metadata.get("relevance_score", sim_scores.get(id(doc)))) for doc in reranked]
+        else:
+            # Parallelize!
+            grades = await asyncio.gather(*[self.critics.agrade_relevance(query, d.page_content) for d in reranked])
+            kept = []
+            for doc, g in zip(reranked, grades):
+                if g.relevant:
+                    score = doc.metadata.get("relevance_score", sim_scores.get(id(doc)))
+                    kept.append(Passage.from_document(doc, score=score))
+
         # 4. Nothing relevant → Tavily fallback.
         if not kept:
             log.info("retriever.no_relevant", query=query)
-            return self._tavily_result(query)
+            return await self.atavily_result(query)
 
         log.info("retriever.rag", query=query, kept=len(kept))
         return RetrievalResult(
@@ -134,6 +171,16 @@ class ProsecutoRetriever:
 
     def _tavily_result(self, query: str) -> RetrievalResult:
         passages = self.tavily.search(query)
+        return RetrievalResult(
+            query=query,
+            passages=passages,
+            scores=[p.score or 0.0 for p in passages],
+            source="tavily" if passages else "none",
+        )
+
+    async def atavily_result(self, query: str) -> RetrievalResult:
+        # TavilyFallback.search is currently sync.
+        passages = await asyncio.to_thread(self.tavily.search, query)
         return RetrievalResult(
             query=query,
             passages=passages,
