@@ -1,0 +1,66 @@
+name: Deploy Prosecuto
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prosecuto
+  cancel-in-progress: true
+
+jobs:
+  deploy-backend-gx10:
+    name: Backend + AI (GX10)
+    runs-on: [self-hosted, gx10]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Deploy backend stack
+        env:
+          DEPLOY_WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+          PROSECUTO_GX10_IP: ${{ vars.PROSECUTO_GX10_IP || '100.113.13.93' }}
+          PROSECUTO_LAPTOP_IP: ${{ vars.PROSECUTO_LAPTOP_IP || '100.125.125.54' }}
+        run: bash deploy/gx10/deploy.sh
+
+      - name: Verify health
+        run: curl -sf http://127.0.0.1:8000/api/health
+
+  deploy-frontend-laptop:
+    name: Frontend (Laptop runner)
+    runs-on: [self-hosted, laptop]
+    needs: deploy-backend-gx10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Deploy frontend
+        shell: pwsh
+        env:
+          PROSECUTO_GX10_IP: ${{ vars.PROSECUTO_GX10_IP || '100.113.13.93' }}
+        run: ./deploy/laptop/deploy.ps1 -Gx10Ip $env:PROSECUTO_GX10_IP
+
+  trigger-laptop-webhook:
+    name: Trigger laptop webhook
+    runs-on: [self-hosted, gx10]
+    needs: deploy-backend-gx10
+    if: ${{ !contains(github.event.head_commit.message, '[skip-frontend]') }}
+    steps:
+      - name: Ping laptop deploy webhook
+        env:
+          DEPLOY_WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+          PROSECUTO_LAPTOP_IP: ${{ vars.PROSECUTO_LAPTOP_IP || '100.125.125.54' }}
+        run: |
+          if [[ -z "$DEPLOY_WEBHOOK_SECRET" ]]; then
+            echo "No DEPLOY_WEBHOOK_SECRET — deploy frontend manually on laptop."
+            exit 0
+          fi
+          curl -sf -X POST "http://${PROSECUTO_LAPTOP_IP}:9876/deploy" \
+            -H "Authorization: Bearer $DEPLOY_WEBHOOK_SECRET" \
+            -H "Content-Type: application/json" \
+            -d '{"ref":"main"}' \
+            || echo "Laptop webhook unreachable — run deploy/laptop/deploy.ps1 on the laptop."

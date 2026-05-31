@@ -1,0 +1,59 @@
+# Prosecuto production stack — Asus GX10 (ARM64 + NVIDIA GB10)
+# LLM/embed/rerank via NVIDIA cloud NIM (NVIDIA_API_KEY).
+# Voice NIM containers can be enabled once Riva/A2F endpoints are configured.
+
+name: prosecuto-gx10
+
+services:
+  api:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    image: prosecuto-api:latest
+    container_name: prosecuto-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../../backend/.env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      CHROMA_PERSIST_DIR: /app/data/chroma
+      CORPUS_DIR: /app/data/corpus
+      UPLOADS_DIR: /app/data/uploads
+    volumes:
+      - ../../backend/data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --loop uvloop
+      --http httptools
+      --timeout-keep-alive 75
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 2G
+
+  redis:
+    image: redis:7-alpine
+    container_name: prosecuto-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:
