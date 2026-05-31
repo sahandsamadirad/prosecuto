@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
@@ -28,8 +29,7 @@ export default function LandingNav() {
   return (
     <nav className="nav" id="nav">
       <Link className="brand" href="#top">
-        <span className="mark" />
-        Prosecuto
+        <Image src="/assets/logo.png" alt="Prosecuto" width={200} height={64} priority />
       </Link>
       <div className="nav-cta">
         <Link className="btn btn-ghost" href="/lawyer">

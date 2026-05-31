@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   },
   description:
     'Prosecuto prepares Ontario citizens to dispute a red light camera ticket — coaching you through Early Resolution and rehearsing the full trial.',
+  icons: {
+    icon: '/assets/favicon.png',
+  },
 };
 
 export default function RootLayout({
