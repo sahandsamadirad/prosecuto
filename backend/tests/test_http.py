@@ -75,6 +75,8 @@ def test_upload_ticket_photo():
     body = r.json()
     assert body["filename"] == "ticket.png"
     assert body["size"] == len(data)
+    session = client.get(f"/api/session/{sid}").json()
+    assert session["uploaded_files"] == ["ticket.png"]
 
 
 def test_upload_to_missing_session_404():

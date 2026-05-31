@@ -1,0 +1,43 @@
+=== Sheet: Provincial ===
+
+Provincial Offences Court Fines by Statute (Part I and III only)
+Fine Amounts/Fines Collected/Fines in Default*
+Provincial Overview
+January 2025 to December 2025
+*In Ontario, municipalities are responsible for administering the courts in which Provincial Offences Act matters, like traffic tickets, are heard.  Municipalities are also responsible for the enforcement and collection of any resulting fines.
+Statute	Offence Description	Fine Amount	Fines Collected		Total Number of Charges with Fine Amounts in Default	Percent
+of Total		Fine Amounts in Default (as of December 2025)	Percent
+of Total
+HIGHWAY TRAFFIC ACT	s.130 Careless driving	9294242.5			25172	0.0075	0.010798889083095009	13590805.97	0.0122
+	s.182 Disobey sign	4647410.9			12133	0.0036	0.0011697729748489495	1396444.23	0.0013
+	s.136 Disobey stop sign — fail to stop	2996099.5			19736	0.0059	0.0015308213038159315	1769675.82	0.0016
+	s.78.1 Drive — hand-held communication device	4486040			10486	0.0031	0.003074301234970287	3742349.02	0.0034
+	s.32 Drive motor vehicle — improper licence	6204522.25			114179	0.034	0.02913813423007571	31731548.12	0.0285
+	s.7 Drive motor vehicle, no currently validated permit	6104174.25			104230	0.031	0.008754916440014637	10214276.57	0.0092
+	s.33 Driver fail to surrender licence	1746462			41208	0.0123	0.0033390239495531535	3680777.08	0.0033
+	s.53 Driving while under suspension	11993641			117837	0.0351	0.13392785389426026	148398130.09	0.1335
+	s.7 Fail to surrender permit for motor vehicle	1109465.5			36716	0.0109	0.003025764719273119	3362969.58	0.003
+	s.144 Red light — proceed before green	46588227			162769	0.0485	0.03400758502285794	38753337.28	0.0349
+	s.106 Seat Belt offences	2992906.5			59853	0.0178	0.007285269764699275	7981752.88	0.0072
+	s.128 Speeding	91217714.69			468910	0.1397	0.03897430267565885	50290986.22	0.0452
+	s.172 Stunt Driving/Racing	2106084			4176	0.0012	0.0070404452369112235	8604162.58	0.0077
+	s.142 Turn — not in safety	1702825.5			9562	0.0028	0.0008792205792995811	1026987.11	0.0009
+	Other Highway Traffic Act Charges	30868667.32			537497	0.1601	0.06293119595712607	70557137.93	0.0635
+	HIGHWAY TRAFFIC ACT Total	224058482.91	208392582.38000003		1724464	0.5137	0.34587749706646	395101340.48	0.3554
+CANNABIS CONTROL ACT		1569657	604698.8300000001		4799	0.0014	0.3517108962142351	1837189.03	0.0017
+COMPULSORY AUTOMOBILE INSURANCE ACT		39829982.2	17527842.97		205499	0.0612	0.038207410482845074	384848141.61	0.3461
+DOG OWNERS' LIABILITY ACT		110270	44712.6		809	0.0002	0.038207410482845074	493412.62	0.0004
+EMPLOYMENT STANDARDS ACT		620175.02	52616.600000000006		1763	0.0005	0.038207410482845074	7317627.34	0.0066
+ENVIRONMENTAL PROTECTION ACT		1826226.65	784882.3400000001		7283	0.0022	0.038207410482845074	17879367.94	0.0161
+LIQUOR LICENCE ACT		28390	155176.58000000002		473534	0.1411	0.038207410482845074	37945324.089999996	0.0341
+MUNICIPAL BY-LAWS		9583457.09	5103104.710000001		224175	0.0668	0.038207410482845074	45634510.96	0.041
+OCCUPATIONAL HEALTH AND SAFETY ACT		9051860	8641955.469999999		5745	0.0017	0.038207410482845074	27289955.700000003	0.0245
+PROVINCIAL ANIMAL WELFARE SERVICES ACT		490600	47255		215	0.0001	0.038207410482845074	544510	0.0005
+SAFE STREETS ACT		122920	7506.5		137749	0.041	0.038207410482845074	7201484	0.0065
+SMOKE-FREE ONTARIO ACT		1098812.0899999999	663242.0199999999		9154	0.0027	0.038207410482845074	3013937.93	0.0027
+OTHER STATUTES		26639726.75	14912177.89		561796	0.1674	0.038207410482845074	182728406	0.1643
+TOTAL POA CHARGES		315030559.71	256937753.89000005		3356985	1	0.038207410482845074	1111835207.7000003	1
+Fine Amount: Payment amount ordered by the court or voluntarily prepaid by the person charged, excluding fee, court cost, victim fine surcharge, and collection agency costs.
+Fines Collected:  Payment amount made in a year by the person charged, excluding fee, court cost, victim fine surcharge, and collection agency costs. HTA fines data is not available by specific offence. Fines collected in a year may represent fines imposed in prior years.
+Fine Amounts in Default: Amounts include the fine amount that went into default, excluding fee, court cost, victim fine surcharge payable and collection agency costs. 'Fine Amounts in Default' do not include unpaid fines that have not yet been noted as being in default and also do not include unpaid fines that have been written-off by Municipal Partners.
+The data is being provided “as is” for the specified purpose with the consent of the Ontario Court of Justice and may not be reused for any other purpose or shared beyond the original intended audience without seeking further approval of the Court. The Ministry of the Attorney General collects this data on behalf of the Court, and as such, the Ontario Court of Justice cannot confirm the accuracy or the completeness of the data. The Court takes no position, nor makes any comment upon any inferences, interpretations, projections, or analysis resulting from the use of this data.

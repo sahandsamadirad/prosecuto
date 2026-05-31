@@ -61,6 +61,7 @@ export default function LawyerApp() {
   const [thinking, setThinking] = useState(false);
   const [tab, setTab] = useState<'chat' | 'docs'>('chat');
   const [openDoc, setOpenDoc] = useState<DocKey | null>(null);
+  const [copiedDoc, setCopiedDoc] = useState<DocKey | null>(null);
   const [mic, setMic] = useState(false);
   const [status, setStatus] = useState<BackendStatus>('idle');
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -211,6 +212,32 @@ export default function LawyerApp() {
       return;
     }
     send(c);
+  };
+
+  const copyOpenDoc = async () => {
+    if (!openDoc) return;
+    const doc = DOCS[openDoc];
+    try {
+      await navigator.clipboard.writeText(doc.text);
+      setCopiedDoc(openDoc);
+      setTimeout(() => setCopiedDoc(null), 1400);
+    } catch {
+      setError('Could not copy the document text.');
+    }
+  };
+
+  const downloadOpenDoc = () => {
+    if (!openDoc) return;
+    const doc = DOCS[openDoc];
+    const blob = new Blob([doc.text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = doc.filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
   };
 
   const toggleMic = async () => {
@@ -441,11 +468,26 @@ export default function LawyerApp() {
                     <div className="st">{DOCS[openDoc].title}</div>
                     <div className="ss">{DOCS[openDoc].sub}</div>
                   </div>
-                  <button className="icon-btn" type="button" onClick={() => setOpenDoc(null)} title="Close">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <path d="M6 6l12 12M18 6L6 18" />
-                    </svg>
-                  </button>
+                  <div className="sheet-actions">
+                    <button className="doc-action" type="button" onClick={copyOpenDoc} title="Copy text">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <rect x="8" y="8" width="11" height="11" rx="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" />
+                      </svg>
+                      {copiedDoc === openDoc ? 'Copied' : 'Copy'}
+                    </button>
+                    <button className="doc-action" type="button" onClick={downloadOpenDoc} title="Download text file">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+                      </svg>
+                      Download
+                    </button>
+                    <button className="icon-btn" type="button" onClick={() => setOpenDoc(null)} title="Close">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path d="M6 6l12 12M18 6L6 18" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <div className="sheet-body">{DOCS[openDoc].render()}</div>
               </>

@@ -27,6 +27,7 @@ from app.orchestrator.graph_judge import (
     get_judge_graph,
 )
 from app.orchestrator.graph_lawyer import (
+    FORCE_FINAL_PACKAGE_FLAG,
     astream_turn,
     build_lawyer_graph,
     get_lawyer_agents,
@@ -57,6 +58,15 @@ PATH_ALIASES = {
     "screening_review": ("screening review", "screening_review", "review"),
     "trial": ("trial", "mock trial", "go to trial"),
 }
+
+PACKAGE_REQUEST_TERMS = (
+    "prepare my defence package",
+    "prepare my defense package",
+    "build my defence package",
+    "build my defense package",
+    "final answer",
+    "final package",
+)
 
 
 class EmptyRetriever:
@@ -222,12 +232,20 @@ def _apply_lawyer_path_choice(state: SessionState, user_text: str) -> None:
     set. The frontend sends natural text, so this small adapter maps obvious
     path choices onto the structured state field.
     """
-    if state.mode != "lawyer" or state.chosen_path is not None:
-        return
-    if state.current_agent != "procedure_map" and state.diagnosis is None:
+    if state.mode != "lawyer":
         return
 
     normalized = user_text.strip().lower().replace("-", " ")
+    if any(term in normalized for term in PACKAGE_REQUEST_TERMS):
+        if FORCE_FINAL_PACKAGE_FLAG not in state.flags:
+            state.flags.append(FORCE_FINAL_PACKAGE_FLAG)
+        state.touch()
+
+    if state.chosen_path is not None:
+        return
+    if state.current_agent != "procedure_map" and state.diagnosis is None and FORCE_FINAL_PACKAGE_FLAG not in state.flags:
+        return
+
     for path, aliases in PATH_ALIASES.items():
         if any(alias in normalized for alias in aliases):
             state.chosen_path = path  # type: ignore[assignment]

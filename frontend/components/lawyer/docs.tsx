@@ -4,11 +4,26 @@ export type DocKey = 'statdec' | 'caselaw' | 'package';
 
 export const DOCS: Record<
   DocKey,
-  { title: string; sub: string; render: () => ReactNode }
+  { title: string; sub: string; filename: string; text: string; render: () => ReactNode }
 > = {
   statdec: {
     title: 'Statutory Declaration',
     sub: 'Ground 1 · Owner was not the driver',
+    filename: 'statutory-declaration.txt',
+    text: `Statutory Declaration
+
+Declaration of the Vehicle Owner
+
+I, [owner full name], of the City of [city], in the Province of Ontario, do solemnly declare that:
+
+1. I am the registered owner of the motor vehicle bearing Ontario licence plate [plate].
+2. On [offence date], at the intersection of [intersection], I was not the driver of the said vehicle.
+3. The driver at the relevant time was [driver name], who has knowledge of these facts.
+
+And I make this solemn declaration conscientiously believing it to be true, and knowing that it is of the same force and effect as if made under oath.
+
+Declarant signature
+Commissioner for taking affidavits`,
     render: () => (
       <div className="legal-doc">
         <div className="lh">
@@ -47,6 +62,18 @@ export const DOCS: Record<
   caselaw: {
     title: 'R. v. Jordan, 2016 SCC 27',
     sub: 'Case law · s.11(b) Charter — delay',
+    filename: 'r-v-jordan-note.txt',
+    text: `R. v. Jordan, 2016 SCC 27
+
+Right to be tried within a reasonable time
+
+The Supreme Court set a presumptive ceiling beyond which delay is considered unreasonable under s.11(b) of the Charter. For matters in provincial court, that ceiling is 18 months from the charge to the actual or anticipated end of trial.
+
+"...a presumptive ceiling of 18 months for cases tried in the provincial court. Delay beyond this ceiling is presumptively unreasonable."
+
+Why it matters for you: if your trial date falls more than 18 months after the date on your Certificate of Offence, this is a live ground to have the charge stayed. We will calculate this precisely once we confirm both dates.
+
+Verify the current state of the law with a paralegal - ceilings and deductions have nuance.`,
     render: () => (
       <div className="legal-doc">
         <div className="lh">
@@ -78,6 +105,31 @@ export const DOCS: Record<
   package: {
     title: 'Your Preparation Package',
     sub: 'Generated for your case',
+    filename: 'prosecuto-preparation-package.txt',
+    text: `Preparation Package
+
+Dispute path: Both - Early Resolution, then Trial
+
+[ Opening statement ]
+
+"Good morning, Your Worship. My name is [name]. I am the registered owner of the vehicle, but I was not its driver on the date in question, and I'll be relying on a statutory declaration to that effect."
+
+[ Defence script - order of play ]
+
+1. Confirm your identity and ownership.
+2. Tender the statutory declaration naming the driver.
+3. Request the camera operating and calibration certificate in disclosure.
+4. If the trial date is more than 18 months out, raise s.11(b).
+
+[ Bring to court ]
+
+- Signed statutory declaration
+- A copy of the Certificate of Offence
+- Any disclosure the Crown provided
+
+[ Delivery ]
+
+Address the bench as "Your Worship." Speak slowly. Don't argue facts that aren't in dispute. Concede nothing about who was driving beyond the declaration.`,
     render: () => (
       <div className="legal-doc">
         <div className="lh">

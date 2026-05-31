@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="80" viewBox="0 0 220 80" role="img" aria-label="Antler">
+  <rect width="220" height="80" rx="14" fill="#ffffff"/>
+  <rect x="18" y="18" width="44" height="44" rx="2" fill="#ef4444"/>
+  <path d="M40 29 L53 58 H45 L40 46 L35 58 H27 Z" fill="#ffffff"/>
+  <text x="138" y="52" fill="#ef4444" font-family="Arial, sans-serif" font-size="31" font-weight="500" text-anchor="middle" letter-spacing="6">ANTLER</text>
+</svg>

@@ -14,7 +14,6 @@ venv/
 # Data — corpus may contain copyrighted text; chroma + uploads are generated
 data/chroma/
 data/uploads/
-data/corpus/*.txt
 !data/corpus/.gitkeep
 
 # Locks we don't pin in the repo yet

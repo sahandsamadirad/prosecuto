@@ -29,6 +29,8 @@ class CourtPhase(str, Enum):
     """Judge Mode court state machine (ARCHITECTURE §12)."""
 
     IDLE = "idle"
+    QUESTIONING = "questioning"
+    FINAL = "final"
     CLERK_CALL_TO_ORDER = "clerk_call_to_order"
     CLERK_OATH = "clerk_oath"
     JUDGE_OPEN = "judge_open"
@@ -65,6 +67,7 @@ class SessionState(BaseModel):
     screening_review_package: ScreeningReviewPackage | None = None
     trial_prep_package: TrialPrepPackage | None = None
     disclosure_package: DisclosurePackage | None = None
+    uploaded_files: list[str] = Field(default_factory=list)
 
     # --- Conversation ---
     transcript: list[Turn] = Field(default_factory=list)

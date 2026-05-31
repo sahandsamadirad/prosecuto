@@ -106,6 +106,13 @@ class DefenceTheoryAgent(BaseAgent):
             },
         )
 
+        # Structured output can return None (model emits no valid tool call,
+        # common in fast mode / with non-tool-calling local LLMs). Never crash —
+        # fall back to a package built from the grounded analysis text.
+        if package is None:
+            package = self._fallback_package(model, sr.answer)
+            package.flags.append("structured_output_fallback")
+
         # Carry Self-RAG confidence + provenance into the package.
         package.confidence = sr.confidence
         package.is_preliminary = bool(state.disclosure_requested)
@@ -143,6 +150,16 @@ class DefenceTheoryAgent(BaseAgent):
             f"legitimate defences, legal arguments, and anticipated Crown evidence for a "
             f"{sub} red light camera ticket in Ontario pursued via {path.replace('_', ' ')}"
         )
+
+    @staticmethod
+    def _fallback_package(model, analysis: str):
+        """Build a minimal valid package from the analysis when structured output fails."""
+        text = analysis.strip() or "A preparation summary could not be generated; please retry."
+        if model is TrialPrepPackage:
+            return TrialPrepPackage(defence_theory=text)
+        if model is ScreeningReviewPackage:
+            return ScreeningReviewPackage(summary=text)
+        return ERPackage(summary=text)
 
     @staticmethod
     def _format_passages(passages: list[Passage]) -> str:
