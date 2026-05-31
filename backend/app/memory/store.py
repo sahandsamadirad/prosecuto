@@ -100,12 +100,39 @@ class InMemorySessionStore(SessionStore):
         return True
 
 
+class _ResilientRedisLock:
+    """Wraps a redis.asyncio Lock so a stale-lock error on release is logged
+    instead of crashing the WebSocket. This happens when the LLM turn takes
+    longer than lock_timeout and Redis auto-expires the key."""
+
+    def __init__(self, inner, session_id: str) -> None:
+        self._inner = inner
+        self._session_id = session_id
+
+    async def __aenter__(self):
+        await self._inner.__aenter__()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        try:
+            await self._inner.__aexit__(exc_type, exc, tb)
+        except Exception as e:  # noqa: BLE001
+            # LockNotOwnedError: lock TTL expired during a slow LLM turn.
+            # The auto-release already happened; log and continue.
+            log.warning(
+                "redis.lock_release_failed",
+                session_id=self._session_id,
+                error=str(e),
+            )
+        return False
+
+
 class RedisSessionStore(SessionStore):
     """Durable Redis-backed store using ``redis.asyncio``."""
 
     name = "redis"
 
-    def __init__(self, url: str, lock_timeout: int = 30, lock_blocking_timeout: int = 10) -> None:
+    def __init__(self, url: str, lock_timeout: int = 120, lock_blocking_timeout: int = 10) -> None:
         import redis.asyncio as aioredis
 
         self._client = aioredis.from_url(url, decode_responses=True)
@@ -125,13 +152,14 @@ class RedisSessionStore(SessionStore):
         await self._client.delete(_key(session_id))
 
     def lock(self, session_id: str):
-        # redis.asyncio Lock is an async context manager; the key enforces the
-        # cross-process mutex. timeout auto-releases to avoid deadlocks.
-        return self._client.lock(
-            _lock_key(session_id),
-            timeout=self._lock_timeout,
-            blocking=True,
-            blocking_timeout=self._lock_blocking_timeout,
+        return _ResilientRedisLock(
+            self._client.lock(
+                _lock_key(session_id),
+                timeout=self._lock_timeout,
+                blocking=True,
+                blocking_timeout=self._lock_blocking_timeout,
+            ),
+            session_id,
         )
 
     async def ping(self) -> bool:
