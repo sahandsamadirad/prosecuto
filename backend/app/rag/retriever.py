@@ -3,13 +3,12 @@
 Implements ARCHITECTURE.md section 8. The retrieval half of the Self-RAG flow:
 
     Chroma similarity (top-k)
-      → NVIDIARerank (top-n)
+      → LocalCrossEncoderReranker / IdentityReranker fallback (top-n)
       → Relevance critic (drop irrelevant passages)
       → return passages, OR trigger Tavily fallback when nothing survives.
 
-Built entirely on LangChain primitives (``langchain_chroma.Chroma`` vectorstore,
-``NVIDIARerank`` compressor). Every external dependency is injectable so the
-retriever can be unit-tested offline.
+All reranking is local (BAAI/bge-reranker-v2-m3 via sentence-transformers).
+No cloud reranking calls.
 """
 
 from __future__ import annotations
@@ -29,15 +28,13 @@ log = structlog.get_logger(__name__)
 
 
 class Reranker(Protocol):
-    """Minimal reranker interface (``NVIDIARerank`` satisfies this)."""
-
     def compress_documents(
         self, documents: list[Document], query: str
     ) -> list[Document]: ...
 
 
 class IdentityReranker:
-    """Offline fallback: preserves order, no reranking. Caller slices to top-n."""
+    """Offline fallback: preserves order, no reranking."""
 
     name = "identity"
 
@@ -48,8 +45,7 @@ class IdentityReranker:
 class LocalCrossEncoderReranker:
     """Local cross-encoder reranker using sentence-transformers.
 
-    Scores each (query, document) pair jointly — more accurate than cosine
-    similarity alone. Runs on GPU when available, CPU otherwise.
+    Scores each (query, document) pair jointly. Runs on GPU when available.
     Model: BAAI/bge-reranker-v2-m3 (~560 MB, multilingual, strong on legal text).
     """
 
@@ -77,23 +73,8 @@ class LocalCrossEncoderReranker:
         return reranked
 
 
-def get_reranker(prefer: str | None = None, top_n: int = 4) -> Reranker:
-    """Local cross-encoder reranker, with NVIDIARerank when explicitly requested."""
-    want_nvidia = prefer == "nvidia" and bool(settings.nvidia_api_key)
-    if want_nvidia:
-        try:
-            from langchain_nvidia_ai_endpoints import NVIDIARerank
-
-            rr = NVIDIARerank(
-                model=settings.nim_rerank_model,
-                api_key=settings.nvidia_api_key,
-                top_n=top_n,
-            )
-            log.info("reranker.selected", provider=f"nvidia:{settings.nim_rerank_model}")
-            return rr
-        except Exception as exc:  # noqa: BLE001
-            log.warning("reranker.nvidia_unavailable", error=str(exc))
-
+def get_reranker(top_n: int = 4) -> Reranker:
+    """Return the local cross-encoder reranker, falling back to identity."""
     try:
         rr = LocalCrossEncoderReranker(top_n=top_n)
         log.info("reranker.selected", provider=rr.name)
@@ -128,10 +109,6 @@ class ProsecutoRetriever:
         filters: dict | None = None,
         grade: bool = True,
     ) -> RetrievalResult:
-        """Return reranked, relevance-graded passages for ``query``."""
-        # Sync version calls async version in a new event loop or use asyncio.run
-        # But wait, it's better to just implement it as is if we want to keep sync compatibility.
-        # Actually, let's implement aretrieve properly.
         scored = self.vectorstore.similarity_search_with_score(query, k=k, filter=filters)
         if not scored:
             return self._tavily_result(query)
@@ -162,8 +139,6 @@ class ProsecutoRetriever:
         filters: dict | None = None,
         grade: bool = True,
     ) -> RetrievalResult:
-        """Async version of retrieve: parallelizes relevance grading."""
-        # 1. Chroma similarity search (usually sync, but we use it as is)
         scored = await asyncio.to_thread(
             self.vectorstore.similarity_search_with_score, query, k=k, filter=filters
         )
@@ -174,19 +149,11 @@ class ProsecutoRetriever:
         docs = [d for d, _ in scored]
         sim_scores = {id(d): s for d, s in scored}
 
-        # 2. Rerank to top-n (most rerankers have async, but NVIDIARerank is usually wrapped)
-        # Use asyncio.to_thread if reranker.compress_documents is blocking.
-        # Actually, NVIDIARerank in langchain supports acompress_documents.
-        if hasattr(self.reranker, "acompress_documents"):
-            reranked = (await self.reranker.acompress_documents(documents=docs, query=query))[:n]
-        else:
-            reranked = (await asyncio.to_thread(self.reranker.compress_documents, documents=docs, query=query))[:n]
+        reranked = (await asyncio.to_thread(self.reranker.compress_documents, documents=docs, query=query))[:n]
 
-        # 3. Parallel relevance critic.
         if not grade:
             kept = [Passage.from_document(doc, score=doc.metadata.get("relevance_score", sim_scores.get(id(doc)))) for doc in reranked]
         else:
-            # Parallelize!
             grades = await asyncio.gather(*[self.critics.agrade_relevance(query, d.page_content) for d in reranked])
             kept = []
             for doc, g in zip(reranked, grades):
@@ -194,7 +161,6 @@ class ProsecutoRetriever:
                     score = doc.metadata.get("relevance_score", sim_scores.get(id(doc)))
                     kept.append(Passage.from_document(doc, score=score))
 
-        # 4. Nothing relevant → Tavily fallback.
         if not kept:
             log.info("retriever.no_relevant", query=query)
             return await self.atavily_result(query)
@@ -217,7 +183,6 @@ class ProsecutoRetriever:
         )
 
     async def atavily_result(self, query: str) -> RetrievalResult:
-        # TavilyFallback.search is currently sync.
         passages = await asyncio.to_thread(self.tavily.search, query)
         return RetrievalResult(
             query=query,
@@ -234,14 +199,8 @@ def get_retriever(
     tavily: TavilyFallback | None = None,
     top_n: int = 4,
 ) -> ProsecutoRetriever:
-    """Build a retriever wired to the default NVIDIA-backed components.
-
-    A fresh ``TavilyFallback`` is created per call so its cache is session-scoped
-    — construct one retriever per session.
-    """
     if vectorstore is None:
         from app.rag.indexer import get_vectorstore
-
         vectorstore = get_vectorstore()
     return ProsecutoRetriever(
         vectorstore=vectorstore,

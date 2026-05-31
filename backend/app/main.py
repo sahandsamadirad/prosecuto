@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     app.state.session_manager = manager
     log.info(
         "prosecuto.startup",
-        llm_model=settings.nim_llm_model,
+        llm_model=settings.local_llm_model,
         chroma_dir=str(settings.chroma_path),
         session_backend=manager.backend,
     )

@@ -222,8 +222,8 @@ def get_lawyer_agents(llm=None, retriever=None) -> LawyerAgents:
     if llm is None:
         from app.llm import get_chat_llm
 
-        llm_think = get_chat_llm(temperature=0, thinking=True)
-        llm_fast = get_chat_llm(temperature=0, thinking=False)
+        llm_think = get_chat_llm(temperature=0)
+        llm_fast = get_chat_llm(temperature=0)
     else:
         llm_think = llm
         llm_fast = llm

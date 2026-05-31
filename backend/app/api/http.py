@@ -191,11 +191,24 @@ async def health(mgr: SessionManager = Depends(get_manager)):
     except Exception as exc:  # noqa: BLE001
         checks["chroma"] = {"ok": False, "error": str(exc)}
 
-    # NIM — report configuration, not a live call (avoid per-healthcheck latency).
-    checks["nim"] = {
-        "configured": bool(settings.nvidia_api_key),
-        "llm_model": settings.nim_llm_model,
-    }
+    # Local vLLM — quick liveness ping against the OpenAI-compatible health endpoint.
+    try:
+        import httpx
+        url = settings.local_llm_endpoint.rstrip("/v1").rstrip("/") + "/health"
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            r = await client.get(url, headers={"Authorization": f"Bearer {settings.local_llm_api_key}"})
+        checks["local_llm"] = {
+            "endpoint": settings.local_llm_endpoint,
+            "model": settings.local_llm_model,
+            "alive": r.status_code == 200,
+        }
+    except Exception as exc:  # noqa: BLE001
+        checks["local_llm"] = {
+            "endpoint": settings.local_llm_endpoint,
+            "model": settings.local_llm_model,
+            "alive": False,
+            "error": str(exc),
+        }
 
     status = "ok" if chroma_ok else "degraded"
     return {"status": status, "checks": checks}

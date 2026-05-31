@@ -215,7 +215,7 @@ def get_judge_characters(llm=None, retriever=None) -> JudgeCharacters:
         from app.llm import get_chat_llm
 
         # Courtroom characters generate scripted speech — no CoT needed.
-        llm = get_chat_llm(temperature=0.0, thinking=False)
+        llm = get_chat_llm(temperature=0.0)
     if retriever is None:
         from app.rag.retriever import get_retriever
 

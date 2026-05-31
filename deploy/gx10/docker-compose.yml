@@ -1,17 +1,19 @@
-# Prosecuto GX10 — vLLM only.
-# API and Redis run natively via systemd (prosecuto-api.service + redis-server).
-# Start: docker compose -f deploy/gx10/docker-compose.yml up -d
+# Prosecuto GX10 — full backend stack.
+# Starts vLLM + FastAPI backend + Redis with one command:
+#   docker compose -f deploy/gx10/docker-compose.yml up -d
 #
-# Image: NVIDIA's official GB10/Blackwell-optimized vLLM (nvcr.io/nvidia/vllm:26.03.post1-py3).
-# Built with native SM12.0/SM12.1 kernels — replaces the generic vllm/vllm-openai image
-# which fell back to slow PTX JIT compilation on the GB10.
-#
-# One-time auth required before pulling:
-#   docker login nvcr.io   (use NGC API key from https://ngc.nvidia.com/setup/api-key)
+# Frontend (Next.js) runs as a host process — see deploy-all.sh.
+# Ollama must be stopped before starting this stack (it competes for unified memory).
 
-name: prosecuto-gx10
+name: prosecuto
 
 services:
+
+  # --------------------------------------------------------------------------
+  # vLLM — NVFP4 Nemotron Super 49B on NVIDIA GB10 Blackwell
+  # NVIDIA's GB10-optimised image with native SM12 kernels (no PTX JIT penalty).
+  # One-time auth: docker login nvcr.io (NGC API key from ngc.nvidia.com)
+  # --------------------------------------------------------------------------
   vllm:
     image: nvcr.io/nvidia/vllm:25.09-py3
     container_name: prosecuto-vllm
@@ -30,6 +32,7 @@ services:
       --max-model-len 32768
       --gpu-memory-utilization 0.70
       --enable-chunked-prefill
+      --enable-prefix-caching
       --max-num-seqs 32
       --trust-remote-code
       --api-key password
@@ -41,5 +44,71 @@ services:
       retries: 10
       start_period: 180s
 
+  # --------------------------------------------------------------------------
+  # Redis — session store (24h TTL, LRU eviction at 5 GB)
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: prosecuto-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 5gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # --------------------------------------------------------------------------
+  # FastAPI backend — GPU-enabled for sentence-transformers (reranker + embedder)
+  # Talks to vLLM via the internal Docker network (vllm:8000).
+  # --------------------------------------------------------------------------
+  api:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: prosecuto-api
+    restart: unless-stopped
+    runtime: nvidia
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../../backend/.env
+    environment:
+      # Override .env localhost values with in-compose service names.
+      REDIS_URL: redis://redis:6379/0
+      LOCAL_LLM_ENDPOINT: http://vllm:8000/v1
+      CHROMA_PERSIST_DIR: /app/data/chroma
+      CORPUS_DIR: /app/data/corpus
+      UPLOADS_DIR: /app/data/uploads
+      NVIDIA_VISIBLE_DEVICES: all
+    volumes:
+      - ../../backend/data:/app/data
+      - huggingface-cache:/root/.cache/huggingface
+    depends_on:
+      redis:
+        condition: service_healthy
+      vllm:
+        condition: service_healthy
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --loop uvloop
+      --http httptools
+      --timeout-keep-alive 75
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
 volumes:
   huggingface-cache:
+    # Shared between vllm and api so sentence-transformers models are cached
+    # alongside the LLM weights — no re-download on container restart.
+  redis-data:
