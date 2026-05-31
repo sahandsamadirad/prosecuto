@@ -61,6 +61,7 @@ class LawyerAgents:
 # Deterministic cap: at most this many user dialogs before we stop gathering
 # and produce the final defence package (ARCHITECTURE behaviour / demo rule).
 MAX_LAWYER_DIALOGS = 5
+FORCE_FINAL_PACKAGE_FLAG = "force_final_package"
 
 
 def _user_turn_count(s: SessionState) -> int:
@@ -80,6 +81,9 @@ def route_entry(gs: LawyerGraphState) -> str:
     # Hard dialog cap → jump straight to the final package, deterministically.
     if s.finalized_package() is not None:
         return END
+    if FORCE_FINAL_PACKAGE_FLAG in s.flags:
+        _force_final_path(s)
+        return "defence_theory"
     if _user_turn_count(s) >= MAX_LAWYER_DIALOGS:
         _force_final_path(s)
         return "defence_theory"

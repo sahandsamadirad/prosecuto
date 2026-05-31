@@ -198,3 +198,22 @@ def test_reconnect_resumes_from_saved_state():
                 break
     assert agent_msgs == ["sufficient_data", "defence_theory"]
     assert client.get(f"/api/session/{sid}/package").json()["kind"] == "early_resolution"
+
+
+def test_explicit_package_request_forces_final_package_from_intake():
+    client = _client_with_fake_graph()
+    sid = _new_session(client)
+
+    with client.websocket_connect(f"/ws/text/{sid}") as ws:
+        ws.send_json({"text": "Let's go with early resolution - please prepare my defence package."})
+        agent_msgs = []
+        while True:
+            m = ws.receive_json()
+            if m["type"] == "agent_text":
+                agent_msgs.append(m["payload"]["agent"])
+            if m["type"] == "state_update":
+                break
+
+    assert agent_msgs == ["defence_theory"]
+    package = client.get(f"/api/session/{sid}/package").json()
+    assert package["kind"] == "early_resolution"
