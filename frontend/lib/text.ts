@@ -26,7 +26,7 @@ export function stripFormatting(input: string): string {
   s = s.replace(/[{}]/g, '');
 
   // Bold / italic emphasis markers.
-  s = s.replace(/(\*\*|__)(.*?)\1/gs, '$2');
+  s = s.replace(/(\*\*|__)([\s\S]*?)\1/g, '$2');
   s = s.replace(/(^|[\s(])[*_]([^*_\n]+)[*_](?=[\s).,!?:;]|$)/g, '$1$2');
 
   // Line-start markdown: headers, quotes, bullet markers, rules.

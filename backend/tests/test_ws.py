@@ -128,27 +128,25 @@ def test_two_sessions_are_independent():
     assert client.get(f"/api/session/{s2}").json()["diagnosis"] is not None
 
 
-def test_judge_mode_ws_opens_automatically_and_streams_beats():
+def test_judge_mode_ws_opens_with_single_judge_question():
     from app.agents.base import AgentResult
     from app.orchestrator.graph_judge import JudgeCharacters, build_judge_graph
     from langgraph.checkpoint.memory import MemorySaver
 
-    class FakeChar:
-        def __init__(self, name):
-            self.name = name
+    class FakeJudge:
+        name = "judge"
 
         async def run(self, state):
             return AgentResult(updated_state=state, assistant_text=f"{self.name}@{state.court_phase.value}")
 
     app.state.judge_graph = build_judge_graph(
-        JudgeCharacters(FakeChar("court_clerk"), FakeChar("judge"), FakeChar("crown_prosecutor")),
+        JudgeCharacters(FakeJudge()),
         MemorySaver(),
     )
     client = TestClient(app)
     sid = client.post("/api/session", json={"mode": "judge"}).json()["session_id"]
 
     with client.websocket_connect(f"/ws/text/{sid}") as ws:
-        # Opening beats stream automatically on connect (no input needed).
         agents = []
         while True:
             m = ws.receive_json()
@@ -156,8 +154,8 @@ def test_judge_mode_ws_opens_automatically_and_streams_beats():
                 agents.append(m["payload"]["agent"])
             if m["type"] == "state_update":
                 break
-        assert agents == ["court_clerk", "court_clerk", "judge", "crown_prosecutor"]
-        assert "phase=defence_opening" in m["payload"]["summary"]
+        assert agents == ["judge"]
+        assert "phase=questioning" in m["payload"]["summary"]
 
 
 def test_reconnect_resumes_from_saved_state():

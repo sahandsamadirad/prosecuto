@@ -103,6 +103,8 @@ class BaseAgent(ABC):
             lines.append(f"- Diagnosis: {d.sub_type} ({d.deadline_status})")
         if state.chosen_path:
             lines.append(f"- Chosen path: {state.chosen_path}")
+        if state.uploaded_files:
+            lines.append("- Uploaded defence files: " + ", ".join(state.uploaded_files))
         return "\n".join(lines)
 
     async def retrieve_context(self, query: str, k: int = 8, n: int = 4, filters: dict | None = None) -> str:

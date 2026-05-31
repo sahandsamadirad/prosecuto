@@ -7,6 +7,12 @@ export type CreateSessionResponse = {
   mode: ProsecutoMode;
 };
 
+export type UploadResponse = {
+  filename: string;
+  size: number;
+  path: string;
+};
+
 export type WSMessage = {
   type: 'agent_text' | 'state_update' | 'error' | string;
   session_id: string;
@@ -41,6 +47,19 @@ export async function createSession(mode: ProsecutoMode): Promise<CreateSessionR
   });
   if (!res.ok) {
     throw new Error(`Could not create ${mode} session (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function uploadSessionFile(sessionId: string, file: File): Promise<UploadResponse> {
+  const body = new FormData();
+  body.append('file', file);
+  const res = await fetch(`${API_BASE}/api/session/${sessionId}/upload`, {
+    method: 'POST',
+    body,
+  });
+  if (!res.ok) {
+    throw new Error(`Could not upload ${file.name} (${res.status})`);
   }
   return res.json();
 }

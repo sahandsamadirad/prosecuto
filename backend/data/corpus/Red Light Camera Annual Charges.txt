@@ -1,0 +1,327 @@
+=== Sheet: RLC Charges By Location (FINAL) ===
+
+																		Published: January 2026
+Location Codes	Ward Number	Charges Laid by Location & Year	Enforcement Start Date	Enforcement End Date	2007	2008	2009	2010	2011	2012	2013	2014	2015	2016	2017	2018	2019	2020	2021	2022	2023	2024	2025
+2501	13	Richmond St. and Parliament St.	2007-11-09 00:00:00		46	1208	909	998	827	1100	812	721	809	829	3994	6615	2937	2106	1400	1290	1281	1317	522
+2502	10	Lake Shore Blvd. and York St.	2007-11-09 00:00:00		42	635	165	238	394	592	249	310	410	271	45	324	321	1197	840	757	659	653	732
+2503	6	Steeles Ave. and Carpenter Rd.	2007-11-09 00:00:00		70	1061	1123	835	782	999	834	747	436	601	528	804	623	920	1830	1794	1514	1422	939
+2504	18	Steeles Ave. and Hilda Ave.	2007-11-09 00:00:00		25	625	527	760	846	1000	906	632	710	786	501	639	455	627	1314	1558	1427	936	889
+2505	1	Albion Rd. and Silverstone Dr.	2007-11-09 00:00:00		222	1467	1137	1092	975	1213	1289	1071	779	797	604	0	1181	947	912	1196	1199	1006	986
+2506	1	Albion Rd. and Finch Ave.*	2009-03-17 00:00:00	2018-05-16 00:00:00	0	0	93	171	145	251	160	110	70	143	32	0	0	0	0	0	0	0	0
+2507	1	Dixon Rd. and Kipling Ave.	2008-03-18 00:00:00		0	160	86	75	96	136	106	86	56	123	27	71	99	82	30	48	60	83	63
+2508	7	Steeles Ave. and Islington Ave.	2008-10-28 00:00:00		0	34	193	181	420	463	405	386	269	452	190	377	410	1313	430	262	230	152	97
+2509	6	Sheppard Ave. and Wilson Heights Blvd.	2009-03-17 00:00:00		0	0	140	189	169	165	159	98	160	155	34	137	147	94	90	108	92	102	153
+2510	6	Bathurst St. and Sheppard Ave.	2007-11-09 00:00:00		5	223	165	117	188	198	144	113	132	131	23	173	150	65	179	201	13	0	45
+2511	8	Lawrence Ave. and Marlee Ave.	2008-03-19 00:00:00		0	436	494	454	288	228	353	275	217	193	213	283	371	307	458	515	479	280	332
+2512	8	Lawrence Ave. and Bathurst St.	2008-08-11 00:00:00		0	54	161	74	90	207	151	174	188	168	24	71	113	342	176	0	204	298	234
+2513	18	Bayview Ave. and Cummer Ave.	2009-03-17 00:00:00		0	0	590	943	811	1227	1194	973	879	1054	1004	885	1105	2601	2346	2899	2513	1435	1240
+2514	18	Finch Ave. and Willowdale Ave.	2009-03-17 00:00:00	2022-02-02 00:00:00	0	0	184	217	0	233	182	169	176	180	22	118	57	0	0*	0	0	0	0
+2515	15	Leslie St. and Lawrence Ave.	2008-05-29 00:00:00		0	139	132	225	165	227	176	121	95	126	18	80	84	57	166	207	218	214	184
+2516	15	Leslie St. and York Mills Rd.	2009-08-05 00:00:00		0	9	50	141	145	207	128	147	133	139	21	101	105	114	216	336	323	273	233
+2517	15	Bayview Ave. and Truman Rd. / Fifeshire Rd.	2008-03-31 00:00:00		0	1416	1962	2291	1966	2210	1589	1093	1163	1994	1934	1648	1591	3383	3679	3106	1745	1211	1392
+2518	22	Midland Ave. and McNicoll Ave.	2008-10-09 00:00:00		0	121	395	383	356	307	238	253	341	344	152	187	81	359	431	324	298	288	252
+2519	22	Steeles Ave. and Birchmount Rd.	2009-03-17 00:00:00		0	0	276	209	411	482	345	295	289	318	183	452	213	136	1475	1558	1491	947	852
+2520	22	Warden Ave. and Arkona Dr. / Cloverleaf Gt.	2008-08-11 00:00:00		0	369	1218	1235	1113	1351	914	844	901	1322	1223	1099	1058	1074	773	1153	1798	621	543
+2521	23	Steeles Ave. and Brimley Rd.	2008-05-29 00:00:00		0	365	462	402	283	552	477	370	334	379	201	269	224	224	193	229	248	169	363
+2522	11	College St. and Bathurst St.	2008-08-11 00:00:00		0	22	109	117	43	127	71	15	108	142	34	501	583	472	548	559	138	248	339
+2523	24	Lawrence Ave. and Morningside Ave.	2008-08-11 00:00:00		0	11	44	86	88	119	127	126	141	143	26	155	187	183	120	68	213	210	196
+2524	1	Dixon Rd. and Carlingview Dr.	2009-03-19 00:00:00		0	0	79	482	332	551	435	260	339	358	425	158	180	238	187	251	258	105	658
+2525	8	Dufferin St. and Glencairn Ave.	2009-03-19 00:00:00		0	0	457	933	527	998	785	948	606	619	544	610	616	2498	2149	1567	1710	1495	1454
+2526	15	Overlea Blvd. and Thorncliffe Park Dr. / Beth Nealson Dr.	2008-10-29 00:00:00		0	59	234	253	228	232	211	184	243	235	122	153	178	151	326	376	284	160	151
+2527	21	Ellesmere Rd. and Kennedy Rd.	2008-03-28 00:00:00		0	225	217	256	189	235	266	232	276	326	120	251	191	729	474	477	524	552	574
+2528	17	Finch Ave. and Leslie St.	2008-10-21 00:00:00		0	38	123	260	203	229	241	194	137	195	92	135	179	414	314	270	365	342	303
+2529	22	Birchmount Rd. and Huntingwood Dr.	2009-03-17 00:00:00		0	0	610	795	618	491	692	556	555	507	354	459	439	378	509	36	51	80	96
+2530	25	Kingston Rd. and Port Union Rd. / Sheppard Ave.	2009-03-18 00:00:00		0	60	27	48	67	82	86	95	95	78	20	95	113	92	89	68	86	73	98
+2531	2	Bloor St. and The West Mall	2009-03-19 00:00:00		0	0	117	240	232	333	253	202	183	184	38	205	190	539	783	1070	1169	780	668
+2532	3	The Queensway and The West Mall	2008-11-20 00:00:00		0	27	216	79	224	369	494	811	346	368	400	240	266	234	221	269	230	350	310
+2533	3	Lake Shore Blvd. and Thirty Seventh St.	2009-03-19 00:00:00		0	0	625	869	480	885	668	268	1015	709	655	948	1000	975	767	774	681	790	785
+2534	3	Kipling Ave. and Horner Ave.	2009-03-19 00:00:00		0	29	20	11	5	34	35	32	20	16	1	22	63	125	54	66	0	30	79
+2535	3	The Queensway and North Queen St.	2009-04-02 00:00:00		0	1	71	119	126	201	186	116	111	197	68	185	154	164	159	106	68	219	186
+2536	6	Wilson Ave. and Transit Rd. / Billy Bishop Way	2009-08-21 00:00:00		0	11	108	542	274	479	476	293	475	650	489	544	329	256	177	191	214	6	9
+2537	4	Lake Shore Blvd. and Windermere Ave.	2008-05-29 00:00:00		0	579	389	1040	955	1220	1366	770	896	1288	1344	1587	1367	875	733	474	507	789	576
+2538	22	Warden Ave. and McNicoll Ave.	2009-03-17 00:00:00		0	0	643	1482	1283	1296	1176	915	810	329	209	402	389	348	946	1173	545	346	65
+2539	6	Keele St. and Wilson Ave.	2008-05-29 00:00:00		0	49	66	80	57	89	93	77	58	79	18	72	106	68	51	114	118	121	80
+2540	9	Dupont St. and Lansdowne Ave.	2008-03-26 00:00:00		0	380	177	116	216	380	331	237	346	742	1518	852	773	1155	948	958	1010	917	676
+2541	4	Queen St. and Lansdowne Ave. / Jameson Ave.	2009-01-21 00:00:00		0	0	162	344	350	802	564	812	1056	1145	943	746	1498	794	605	935	1130	1074	869
+2542	2	Burnhamthorpe Rd. and The East Mall	2008-03-26 00:00:00		0	241	328	168	161	0	504	422	504	530	314	561	408	421	382	417	189	553	626
+2543	6	Sheppard Ave. and Keele St.	2009-03-17 00:00:00		0	0	50	63	82	111	126	85	97	99	18	62	90	39	82	0	97	113	86
+2544	16	Eglinton Ave. and Bermondsey Rd. / Sloane Ave.*	2008-03-27 00:00:00	2017-07-06 00:00:00	0	835	677	889	522	535	647	705	604	609	317	0	0	0	0	0	0	0	0
+2545	5	Jane St. and Bala Ave. / Emmett Ave.	2008-05-16 00:00:00		0	1056	1060	1037	936	869	628	1049	990	882	344	537	350	608	586	348	454	449	309
+2546	7	Jane St. and Clair Rd. / Spenvalley Dr.	2008-10-09 00:00:00		0	472	1883	1353	1308	927	1082	77	345	1300	958	1069	1412	1524	1065	1004	710	560	578
+2547	19	O Connor Dr. and Bermondsey Rd. / Yardley Ave.	2008-08-11 00:00:00		0	150	320	348	190	387	251	285	345	358	142	276	206	643	449	282	124	0	92
+2548	20	Danforth Ave. and Birchmount Rd.	2009-04-01 00:00:00		0	309	220	328	269	286	287	125	200	332	145	258	203	237	139	152	310	347	253
+2549	2	Islington Ave. and The Westway	2008-12-10 00:00:00		0	8	308	910	385	596	833	673	689	706	480	446	308	496	1242	818	265	278	227
+2550	12	Bathurst St. and Davenport Rd.	2009-03-18 00:00:00		0	0	22	0	47	0	0	286	589	2662	2430	1587	2120	1015	800	1625	1528	1189	1183
+2551	20	Warden Ave. and Comstock Rd.	2008-10-28 00:00:00		0	104	542	494	248	274	367	338	351	539	218	334	291	280	281	419	550	373	332
+2552	16	Eglinton Ave. and Victoria Park Ave.*	2009-03-19 00:00:00	2017-08-28 00:00:00	0	4	221	474	327	447	431	402	322	375	283	0	0	0	0	0	0	0	0
+2553	14	Eastern Ave. and Coxwell Ave.	2009-08-13 00:00:00		0	0	47	181	129	164	178	189	138	151	86	219	324	259	169	374	183	105	92
+2554	13	Jarvis St. and Dundas St.*	2009-03-17 00:00:00	2016-11-03 00:00:00	0	0	346	494	365	427	303	254	290	465	0	0	0	0	0	0	0	0	0
+2555	21	Midland Ave. and Progress Ave.	2009-04-16 00:00:00		0	0	43	129	98	119	213	199	212	211	81	154	53	45	197	215	194	259	235
+2556	21	Lawrence Ave. and Bellamy Rd.	2009-04-01 00:00:00		0	1	123	291	228	302	196	48	494	502	283	503	540	418	722	720	596	239	263
+2557	21	Eglinton Ave. and Birchmount Rd.*	2009-04-01 00:00:00	2017-07-04 00:00:00	0	2	56	197	181	234	271	219	225	249	121	0	0	0	0	0	0	0	0
+2558	20	Danforth Rd. and Birchmount Rd.	2010-02-25 00:00:00		0	0	7	71	58	70	55	74	75	60	4	44	40	0	79	186	139	156	144
+2559	20	St. Clair Ave. and Brimley Rd.	2009-08-21 00:00:00		0	0	113	293	183	288	287	249	331	306	159	350	369	198	134	0	313	275	160
+2560	5	Keele St. and Lawrence Ave.	2009-03-19 00:00:00		0	0	180	188	138	167	135	152	141	128	18	92	134	77	480	542	304	243	212
+2561	9	Bloor St. and Ossington Ave.	2011-11-22 00:00:00		0	0	0	0	21	141	107	46	275	257	88	789	744	486	598	770	671	586	310
+2562	14	Danforth Ave. and Greenwood Ave.	2010-01-07 00:00:00		0	0	0	557	205	299	468	631	544	613	3586	3551	2622	0	0	0	0	0	150
+2563	19	Queen St. and Woodbine Ave.	2009-08-06 00:00:00		0	0	25	28	8	16	13	35	23	175	40	80	100	116	77	62	51	62	25
+2564	13	Jarvis St. and King St.	2009-08-06 00:00:00		0	0	83	187	104	94	138	97	122	200	588	1318	1254	636	839	822	666	685	570
+2565	14	Lake Shore Blvd. and Leslie St.	2009-08-06 00:00:00		0	1	252	722	512	612	334	3	16	386	191	346	304	195	190	199	209	201	157
+2566	10	Lower Jarvis St. and The Esplanade	2009-08-06 00:00:00		0	0	414	891	108	0	284	727	665	692	2708	2500	1661	1131	447	1243	1000	938	729
+2567	14	Lake Shore Blvd. and Carlaw Ave.	2009-08-06 00:00:00		0	0	214	1173	546	1097	768	623	583	732	566	650	601	305	343	345	272	0	0
+2568	5	Keele St. and Rogers Rd.	2009-09-08 00:00:00		0	0	102	262	153	203	151	213	212	242	87	546	1309	1046	300	175	576	334	0
+2569	4	Bloor St. and Dundas St.	2009-08-11 00:00:00		0	0	129	348	146	297	328	267	226	198	824	992	851	589	897	1040	1083	1083	939
+2570	8	Yonge St. and Lawrence Ave.	2009-08-05 00:00:00		0	0	188	131	740	963	864	772	402	255	155	272	211	271	1360	1339	1136	945	656
+2571	13	Spadina Ave. and Adelaide St.*	2009-11-13 00:00:00	2019-12-16 00:00:00	0	0	0	38	63	5	110	134	175	206	71	15	22	0	0	0	0	0	0
+2572	8	Eglinton Ave. and Spadina Rd.	2010-01-07 00:00:00		0	0	0	752	813	954	774	683	683	713	975	601	420	722	631	432	515	384	380
+2573	12	Eglinton Ave. and Mount Pleasant Rd.*	2009-06-09 00:00:00	2017-06-21 00:00:00	0	0	93	221	156	109	121	143	149	24	0	0	0	0	0	0	0	0	0
+2574	16	Lawrence Ave. and Don Mills Rd.	2009-09-10 00:00:00		0	0	30	86	68	63	90	85	86	112	11	40	80	81	68	66	102	180	118
+2575	23	Neilson Rd. and Sheppard Ave.	2009-08-04 00:00:00		0	0	108	248	150	162	149	136	174	203	51	134	144	102	74	80	61	115	317
+2576	23	Sheppard Ave. and Malvern St. / Progress Ave.	2009-08-04 00:00:00		0	0	73	622	695	584	507	287	1038	829	655	801	780	875	923	1218	1139	495	906
+2577	25	Ellesmere Rd. and Military Trl.	2009-08-05 00:00:00		0	0	81	684	531	667	539	691	589	564	392	374	361	347	406	634	457	407	294
+2578	21	Kennedy Rd. and HWY 401 C E Kennedy Off Ramp / William Kitchen Rd.	2017-12-19 00:00:00												104	5641	5454	4890	2662	2273	2196	3641	5505
+2579	10	University Ave. and Richmond St.	2017-07-24 00:00:00												1334	2941	3106	1325	0	1041	1815	1138	840
+2580	13	Adelaide St. and Parliament St.	2017-06-05 00:00:00												718	808	1189	435	263	743	931	2474	2393
+2581	10	University Ave. and Adelaide St.	2017-10-20 00:00:00												244	1009	908	685	719	1667	1133	486	577
+2582	1	Dixon Rd. and Martin Grove Rd.	2017-07-10 00:00:00	2022-06-20 00:00:00											150	314	240	217	111	77	0	0	0
+2583	10	University Ave. and Queen St.	2017-08-31 00:00:00												740	2287	2292	1407	871	0	0	0	0
+2584	6	Keele St. and Wilson Ave.	2017-10-20 00:00:00												172	490	485	493	450	726	719	806	517
+2585	10	Lake Shore Blvd. and Spadina Ave. / Lower Spadina Ave.	2017-08-08 00:00:00												439	437	289	1267	1142	1171	790	864	888
+2586	3	Lake Shore Blvd. and Park Lawn Rd. / Marine Parade Dr.	2017-10-06 00:00:00												71	230	288	309	310	363	349	308	273
+2587	18	Sheppard Ave. and Bayview Ave.	2017-07-14 00:00:00												57	127	105	84	73	259	165	137	146
+2588	7	Steeles Ave. and Weston Rd.	2017-10-30 00:00:00												58	251	185	229	286	240	294	248	154
+2589	24	Lawrence Ave. and Greencedar Crct. / Greenbrae Crct.	2017-03-10 00:00:00												506	901	709	711	1212	950	771	713	676
+2590	22	Finch Ave. and Birchmount Rd.	2017-03-10 00:00:00												108	98	111	144	130	155	131	158	149
+2591	7	Finch Ave. and Sentinel Rd.*	2017-03-24 00:00:00	2018-05-15 00:00:00											341	149	0	0	0	0	0	0	0
+2592	2	Bloor St. and The East Mall	2017-12-19 00:00:00												9	143	125	295	221	268	325	292	276
+2593	1	Albion Rd. and Finch Ave.*	2017-07-10 00:00:00	2018-05-15 00:00:00											116	56	0	0	0	0	0	0	0
+2594	7	Wilson Ave. and Jane St.	2017-03-09 00:00:00												254	216	173	561	410	329	307	310	267
+2595	22	Warden Ave. and McNicoll Ave.	2017-03-10 00:00:00												526	622	534	652	661	749	596	608	260
+2596	1	Finch Ave. and Martin Grove Rd.*	2017-06-05 00:00:00	2018-05-15 00:00:00											123	55	0	0	0	0	0	0	0
+2597	7	Steeles Ave. and Keele St.	2017-03-10 00:00:00												255	257	102	0	0	0	0	0	18
+2598	10	University Ave. and Wellington St.	2017-09-06 00:00:00												994	2856	1972	1620	1630	832	0	643	1479
+2599	1	Albion Rd. and Kipling Ave.	2017-07-10 00:00:00												197	571	250	310	431	707	415	356	292
+2600	3	The Queensway and Kipling Ave.	2018-09-05 00:00:00												0	75	222	171	145	161	248	272	217
+2601	17	Finch Ave. and Gordon Baker Rd. / HWY 404 N Ramp	2017-11-30 00:00:00												66	504	498	405	510	138	0	0	1245
+2602	13	Jarvis St. and Isabella St.	2017-03-13 00:00:00												83	27	20	1	2	3	19	34	24
+2603	20	Danforth Rd. and Brimley Rd.	2017-03-10 00:00:00												1668	1714	1468	1192	739	1168	1202	1461	1614
+2604	13	Dundas St. and River St.	2017-07-10 00:00:00	2022-02-02 00:00:00											174	268	209	122	147*	4	0	0	0
+2605	23	McCowan Rd. and McNicoll Ave.	2017-03-14 00:00:00												321	355	287	348	371	256	261	181	222
+2606	5	St. Clair Ave. and Gunns Rd. / Old Stock Yards Rd.	2017-07-10 00:00:00												106	188	148	358	492	515	392	403	367
+2607	10	Spadina Ave. and King St.	2017-11-03 00:00:00												363	1786	1520	1387	935	0	0	53	374
+2608	23	Sheppard Ave. and McCowan Rd.	2017-03-10 00:00:00												453	538	519	339	946	668	650	417	307
+2609	13	King St. and Parliament St.	2017-03-10 00:00:00												83	148	93	100	60	143	138	186	373
+2610	1	Rexdale Blvd. and Martin Grove Rd.	2017-04-11 00:00:00												330	421	359	243	185	352	268	242	181
+2611	3	The Queensway and The East Mall	2017-10-06 00:00:00												174	937	809	749	814	871	541	430	611
+2612	12	St. Clair Ave. and Spadina Rd.	2017-07-14 00:00:00												209	262	147	122	104	381	367	0	263
+2613	6	Dufferin St. and Finch Ave.	2017-06-05 00:00:00												457	624	219	291	289	283	380	404	446
+2614	3	Islington Ave. and Evans Ave.	2017-06-05 00:00:00												122	95	477	731	545	507	508	454	386
+2615	1	Eglinton Ave. and Martin Grove Rd.	2017-07-10 00:00:00												561	790	837	907	991	798	779	484	339
+2616	23	Finch Ave. and Brimley Rd.	2017-03-10 00:00:00												123	102	103	75	109	209	198	199	181
+2617	4	Lake Shore Blvd. and Jameson Ave.	2017-07-10 00:00:00												2139	3336	3125	1692	973	1457	1882	1882	2123
+2618	21	Eglinton Ave. and Danforth Rd.	2017-03-10 00:00:00												2222	1729	1380	998	822	921	669	721	555
+2619	23	Neilson Rd. and McLevin Ave.	2017-06-05 00:00:00												122	203	155	148	141	139	99	66	263
+2620	10	Simcoe St. and Wellington St.	2017-08-08 00:00:00												15	49	51	34	26	1	35	6	21
+2621	7	Jane St. and Stong Crt. / York Gate Blvd.	2017-10-20 00:00:00												326	1239	1136	1005	1060	1705	1277	1123	990
+2622	24	Ellesmere Rd. and Bellamy Rd.	2017-03-10 00:00:00												290	441	352	241	276	398	325	260	212
+2623	21	Lawrence Ave. and Kennedy Rd.	2017-03-10 00:00:00												100	81	38	118	168	156	188	215	192
+2624	20	Warden Ave. and Comstock Rd.	2017-03-10 00:00:00												463	444	298	206	404	649	733	701	524
+2625	23	Sheppard Ave. and Malvern St. / Progress Ave.	2017-05-03 00:00:00												198	208	163	234	201	235	181	85	125
+2626	1	Rexdale Blvd. and Kipling Ave.	2017-10-20 00:00:00												52	70	111	220	214	200	345	413	394
+2627	5	Weston Rd. and Lawrence Ave.	2017-10-20 00:00:00												52	303	224	242	0	0	465	607	454
+2628	1	Islington Ave. and Albion Rd.	2017-06-19 00:00:00												67	127	102	81	228	180	174	142	104
+2629	3	Islington Ave. and The Queensway	2018-02-16 00:00:00	2022-02-02 00:00:00											0	94	65	107	63*	0	0	0	0
+2630	18	Yonge St. and Steeles Ave.	2017-08-11 00:00:00												128	170	6	0	0	92	98	182	739
+2631	5	St. Clair Ave. and Runnymede Rd.	2017-08-11 00:00:00												156	367	331	221	922	965	1030	884	816
+2632	21	Warden Ave. and Ashtonbee Rd.	2017-03-13 00:00:00												1083	1254	866	755	1045	1660	1033	824	711
+2633	7	Finch Ave. and Signet Dr.*	2017-10-20 00:00:00	2018-05-15 00:00:00											523	723	0	0	0	0	0	0	0
+2634	5	Keele St. and Lawrence Ave.	2017-08-11 00:00:00												165	374	327	287	659	737	498	360	370
+2635	22	Birchmount Rd. and McNicoll Ave.	2017-08-11 00:00:00												89	269	373	274	624	537	636	564	318
+2636	23	Finch Ave. and Middlefield Rd.	2017-03-24 00:00:00												193	231	169	141	123	130	354	265	207
+2637	1	Dixon Rd. and Islington Ave.	2017-12-19 00:00:00												15	364	286	170	334	1114	1452	840	714
+2638	10	Spadina Ave. and Bremner Blvd. / Fort York Blvd.	2017-09-28 00:00:00												215	605	498	1880	1539	1916	1666	1489	1573
+2639	3	The Queensway and Royal York Rd.	2017-06-05 00:00:00												49	43	31	23	10	17	41	43	43
+2640	10	Lake Shore Blvd. and Strachan Ave.	2017-10-06 00:00:00												104	756	510	204	217	217	416	364	178
+2641	24	Lawrence Ave. and Markham Rd.	2017-03-24 00:00:00												106	128	108	203	258	208	255	135	120
+2642	5	Jane St. and Falstaff Ave.	2017-10-20 00:00:00												111	692	684	497	861	1157	622	886	756
+2643	8	Avenue Rd. and Lawrence Ave.	2017-03-14 00:00:00												151	130	121	72	672	803	682	563	402
+2644	1	Highway 27 and Finch Ave.*	2017-03-23 00:00:00	2018-05-15 00:00:00											346	153	0	0	0	0	0	0	0
+2645	22	Pharmacy Ave. and McNicoll Ave.	2017-03-24 00:00:00												221	182	256	175	151	183	113	128	138
+2646	24	Markham Rd. and Progress Ave.	2017-08-11 00:00:00												23	58	47	14	58	75	68	55	37
+2647	23	Markham Rd. and Sheppard Ave.	2017-04-11 00:00:00												571	720	636	354	660	556	460	822	966
+2648	17	Don Mills Rd. and Van Horne Ave.	2017-07-10 00:00:00												540	150	585	366	246	576	532	367	335
+2649	25	Sheppard Ave. and Morningside Ave.	2017-03-10 00:00:00												261	216	68	0	0	0	45	89	174
+2650	25	Morningside Ave. and Milner Ave.	2017-03-10 00:00:00												625	494	150	242	193	172	129	131	161
+2651	7	Finch Ave. and Norfinch Dr. / Oakdale Rd.*	2017-06-19 00:00:00	2018-05-15 00:00:00											35	15	0	0	0	0	0	0	0
+2652	22	Kennedy Rd. and McNicoll Ave.	2017-09-28 00:00:00												152	637	602	1110	1032	947	833	729	574
+2653	24	Ellesmere Rd. and Markham Rd.	2018-02-16 00:00:00													119	118	116	263	303	421	271	321
+2654	4	Bloor St. and Keele St. / Parkside Dr.	2018-09-05 00:00:00													244	832	493	100	90	218	230	215
+2655	2	Eglinton Ave. and Scarlett Rd.	2019-06-03 00:00:00														21	43	83	30	0	0	0
+2656	6	Steeles Ave. and Dufferin St.	2018-09-05 00:00:00													120	286	294	226	301	282	225	132
+2657	9	Dufferin St. and Dupont St.	2018-11-28 00:00:00													13	105	43	251	318	86	0	0
+2658	3	Bloor St. and Islington Ave.	2018-11-28 00:00:00														11	47	36	56	51	18	30
+2659	1	Steeles Ave. and Highway 27	2019-03-01 00:00:00														30	137	146	207	98	191	187
+2660	17	Don Mills Rd. and Sheppard Ave.	2019-09-19 00:00:00														98	276	149	172	110	196	197
+2661	7	Steeles Ave. and Signet Dr.	2019-06-03 00:00:00														318	401	727	958	867	1795	1702
+2662	22	Kennedy Rd. and Sheppard Ave	2020-05-27 00:00:00															870	752	826	546	715	482
+2663	12	Bathurst St. and Nina St.	2020-12-03 00:00:00															41	524	278	172	0	115
+2664	17	Finch Ave. and Liszt Gt.	2024-03-01 00:00:00																			1798	1698
+2665	22	Warden Ave. and Bamburgh Crcl.	2024-03-01 00:00:00																			687	781
+2666	12	Avenue Rd. and Chaplin Cres.	2022-05-19 00:00:00																0	1513	1825	1398	1201
+2667	23	Brimley Rd. and Huntingwood Dr.	2021-04-07 00:00:00																431	829	580	530	410
+2668	21	Brimley Rd. and Progress Ave.	2021-05-27 00:00:00																196	307	312	308	225
+2669	20	Kingston Rd. and Brimley Rd.	2021-05-07 00:00:00																230	313	198	99	0
+2670	24	Lawrence Ave. and Scarborough Golf Club Rd.	2021-05-14 00:00:00																280	409	265	262	304
+2671	23	Steeles Ave. and Markham Rd.	2021-06-30 00:00:00																281	292	227	211	199
+2672	6	Steeles Ave. and Bathurst St.	2021-12-29 00:00:00																0	188	234	224	237
+2673	10	Strachan Ave. and Wellington St.	2021-07-21 00:00:00																47	101	122	119	69
+2674	11	University Ave. and College St.	2021-10-21 00:00:00																80	230	219	491	475
+2675	11	University Ave. and Dundas St.	2021-07-21 00:00:00																832	1658	1419	1867	1453
+2676	21	Warden Ave. and Ellesmere Rd.	2021-06-11 00:00:00																781	1323	865	781	846
+2677	22	Warden Ave. and Bridletowne Crcl. (South Intersection)	2021-12-16 00:00:00																6	435	282	319	434
+2678	18	Willowdale Ave. and Bishop Ave.	2021-04-07 00:00:00																51	98	43	100	100
+2679	22	Steeles Ave. and Warden Ave.	2022-09-16 00:00:00																	15	44	37	41
+2680	18	Cummer Ave. and Willowdale Ave.	2021-05-25 00:00:00																555	285	838	642	484
+2681	17	Sheppard Ave. and Victoria Park Ave.	2021-05-27 00:00:00																193	231	291	366	289
+2682	6	Bathurst St. and Finch Ave.	2021-07-29 00:00:00																27	215	231	204	177
+2683	17	Finch Ave. and Don Mills Rd.	2021-05-14 00:00:00																82	323	389	405	317
+2684	21	Ellesmere Rd. and Midland Ave.	2022-07-28 00:00:00																	219	557	505	542
+2685	7	Steeles Ave. and Jane St.	2021-03-05 00:00:00																491	397	573	134	116
+2686	7	Sheppard Ave. and Jane St.	2021-05-25 00:00:00																153	192	231	200	277
+2687	21	Lawrence Ave. and Midland Ave.	2021-09-30 00:00:00																14	64	88	89	57
+2688	21	McCowan Rd. and Ellesmere Rd.	2021-08-27 00:00:00																81	145	142	130	113
+2689	8	Dufferin St. and Bridgeland Ave.	2022-07-22 00:00:00																	152	286	245	242
+2690	21	McCowan Rd. and Brimorton Dr.	2021-06-11 00:00:00																1056	1102	905	938	789
+2691	1	Highway 27 and Rexdale Blvd.	2021-06-11 00:00:00																82	41	113	123	133
+2692	6	Bathrust St. and Wilson Ave.	2021-06-29 00:00:00																275	504	358	1280	1313
+2693	13	Jarvis St. and Shuter St.	2021-06-03 00:00:00																724	1339	1627	832	569
+2694	24	Lawrence Ave. and Greencrest Crct.	2021-07-29 00:00:00																730	1321	917	861	1557
+2695	1	Steeles Ave. and Martin Grove Rd.	2021-06-29 00:00:00																358	647	519	388	402
+2696	10	Lake Shore Blvd. and Lower Simcoe St.	2021-09-13 00:00:00																14	23	48	53	56
+2697	1	Martin Grove Rd. and Belfield Rd.	2021-07-29 00:00:00																112	115	76	99	131
+2698	23	Finch Ave. and Markham Rd.	2021-06-03 00:00:00																1033	1122	1329	1204	971
+2699	22	Finch Ave. and Warden Ave.	2021-06-30 00:00:00																224	323	187	132	101
+2700	21	Lawrence Ave. and Pharmacy Ave.	2021-07-29 00:00:00																324	977	1228	629	697
+2701	4	Jane St. and Dundas St.	2022-05-19 00:00:00																	232	176	0	315
+2702	21	Eglinton Ave. and Brimley Rd.	2022-08-29 00:00:00																	89	210	163	151
+2703	20	Eglinton Ave. and Markham Rd.	2021-06-23 00:00:00																183	374	309	246	245
+2704	21	McCowan Rd. and Consilium Pl.	2022-11-18 00:00:00																	105	865	325	314
+2705	20	St. Clair Ave. and Danforth Rd.	2021-04-27 00:00:00																145	102	85	66	77
+2706	21	Lawrence Ave. and McCowan Rd.	2021-08-16 00:00:00																284	509	498	285	205
+2707	25	Morningside Ave. and Hwy. 401 N Ramp	2021-06-23 00:00:00																487	643	379	425	353
+2708	24	Bellamy Rd. and Brimorton Dr.	2021-06-03 00:00:00																232	328	367	300	343
+2709	7	Weston rd. and Fenmar Dr.	2021-07-29 00:00:00																167	344	380	444	440
+2710	23	Markham Rd. and McNicoll Ave.	2021-06-11 00:00:00																537	670	657	537	510
+2711	21	Lawrence Ave. and Warden Ave.	2021-06-23 00:00:00																272	352	538	383	336
+2712	2	Kippling Ave. and Widdicombe Hill	2021-08-16 00:00:00																255	647	682	528	362
+2713	22	Sheppard Ave. and Warden Ave.	2021-12-29 00:00:00																2	203	204	141	184
+2714	21	Lawrence Ave. and Brimley Rd.	2021-08-27 00:00:00																195	563	495	365	306
+2715	6	William R. Allen Rd. and Sheppard Ave. W	2021-06-29 00:00:00																275	485	445	210	149
+2716	22	Midland Ave. and Copthorne Ave.	2021-08-16 00:00:00																76	160	104	242	258
+2717	16	Lawrence Ave. and The Donway E	2022-07-13 00:00:00																	150	587	531	372
+2718	22	Sheppard Ave. and Midland Ave.	2022-09-27 00:00:00																	19	106	74	68
+2719	17	Steeles Ave. and Don Mills Rd.	2021-09-13 00:00:00																50	239	313	798	627
+2720	20	St. Clair Ave. and Kennedy Rd.	2022-12-21 00:00:00																	9	309	306	245
+2721	20	Danforth Rd. and Midland Ave.	2022-12-28 00:00:00																	4	999	1123	863
+2722	23	Finch Ave. and McCowan Rd.	2021-11-09 00:00:00																7	59	43	29	34
+2723	22	Steeles Ave. and Kennedy Rd.	2022-11-23 00:00:00																	15	153	41	43
+2724	6	Steeles Ave. and Alness St.	2021-07-29 00:00:00																108	226	435	502	313
+2725	23	Markham Rd. and McLevin Ave.	2021-12-29 00:00:00																4	1206	1090	1035	734
+2726	2	Burnhamthorpe Rd. and Martin Grove Rd.	2022-08-29 00:00:00																	809	1856	1627	833
+2727	2	Burnhamthorpe Rd. and The West Mall	2021-08-27 00:00:00																72	152	169	196	148
+2728	23	Markham Rd. and Milner Ave.	2021-09-27 00:00:00																34	163	172	121	104
+2729	1	Ellesmere Rd. and Military Trl. / Orton Park Rd.	2022-11-29 00:00:00																	72	860	481	324
+2730	5	Jane St. and St. Clair Ave. W.	2021-08-16 00:00:00																34	164	70	0	64
+2731	23	Finch Ave. E. and Neilson Rd.	2021-09-30 00:00:00																122	243	293	207	185
+2732	21	Lawrence Ave. and Howden Rd.	2021-12-16 00:00:00																77	2648	2260	1462	962
+2733	23	Finch Ave. and Tapscott Rd.	2023-01-18 00:00:00																	36	256	254	200
+2734	22	Kennedy Rd. and Finch Ave. E.	2021-11-09 00:00:00																29	158	162	87	76
+2735	18	Finch Ave. E. and Kenneth Ave.	2021-10-21 00:00:00																6	133	130	91	106
+2736	20	Warden Ave. and St. Clair Ave	2022-12-21 00:00:00																	37	276	181	144
+2737	18	Willowdale Ave. and Spring Garden Ave.	2021-08-27 00:00:00																7	205	217	223	148
+2738	16	O'Connor Dr. and Sunrise Ave.	2021-11-09 00:00:00																16	137	112	87	59
+2739	1	Martin Grove Rd. and Bethridge Rd.	2021-09-30 00:00:00																174	475	440	571	723
+2740	24	Kingston Rd. and Lawrence Ave.	2022-11-14 00:00:00																	303	557	512	1486
+2741	21	Ellesmere Rd. and Brimley Rd.	2022-07-28 00:00:00																	200	361	362	544
+2742	23	Brimley Rd. and Sheppard Ave. E	2021-09-27 00:00:00																78	379	282	176	112
+2743	24	Markham Rd. and Greencedar Crct.	2021-08-27 00:00:00																16	161	189	157	146
+2744	1	Rexdale Blvd. and Queens Plate Dr.	2022-11-02 00:00:00																	583	2763	1950	2106
+2745	13	Yonge St. and Richmond St.	2022-09-16 00:00:00																	72	321	112	192
+2746	3	Evans Ave. and Horner Ave.	2021-09-30 00:00:00																45	204	182	127	186
+2747	17	Victoria Park Ave. and Steeles Ave.	2023-01-18 00:00:00																	108	1457	1178	1100
+2748	2	Dundas St. 275 M N of Royal York Rd.	2021-10-21 00:00:00																166	1172	1127	658	636
+2749	23	McCowan Rd. 210 metres S of Alton Towers Crcl. (North Intersection)	2021-11-09 00:00:00																33	1020	964	1028	945
+2750	7	Jane St. 70 metres N of William Cragg Dr.	2021-12-16 00:00:00																10	307	774	828	875
+2751	24	Neilson Rd. and Military Trl.	2022-03-17 00:00:00																	439	461	485	509
+2752	1	Martin Grove Rd and John Garland Blvd.	2022-02-10 00:00:00																	188	417	286	216
+2753	10	Lake Shore Blvd. and Bathurst st	2022-09-16 00:00:00																	144	377	484	442
+2754	18	Bayview Ave. and Finch Ave. E	2022-08-19 00:00:00																	87	231	367	248
+2755	14	O'Connor Dr. and Pape Ave.	2022-03-17 00:00:00																	779	572	477	356
+2756	25	Meadowvale Rd. and Dean Oark Rd.	2022-03-30 00:00:00																	570	705	661	551
+2757	24	Ellesmere Rd. and Morningside Ave.	2022-12-21 00:00:00																	1	184	147	112
+2758	23	McCowan rd. and Alton Towers Crcl. (N Side)	2022-07-28 00:00:00																	257	753	538	410
+2759	7	Islington Ave. and Millwick Dr.	2022-08-29 00:00:00																	25	465	804	785
+2760	20	Pharmacy Ave. and St. Clair Ave. E.	2022-08-29 00:00:00																	122	390	686	618
+2761	18	Yonge St. and Athabaska Ave.	2022-08-29 00:00:00																	808	2537	1908	2170
+2762	21	McCowan Rd. and Bushby Rd.	2022-07-28 00:00:00																	350	596	324	0
+2763	18	Empress Ave. and Yonge St	2022-09-27 00:00:00																	399	1585	918	518
+2764	22	Warden ave. and Huntingwood Dr.	2022-03-17 00:00:00																	468	284	120	107
+2765	21	Lawrence Ave. and Birchmount Rd.	2022-07-28 00:00:00																	153	426	355	498
+2766	3	Bloor St. and Royal York Rd.	2022-05-20 00:00:00																	172	356	98	124
+2767	2	Eglinton Ave. and Kipling Ave.	2022-06-29 00:00:00																	35	286	43	44
+2768	3	The East Mall and North Queen St.	2022-07-22 00:00:00																	68	128	228	259
+2769	1	Albion Rd. and Martin Grove Rd.	2022-10-11 00:00:00																	43	373	250	731
+2770	1	Islington Ave. and Elmhurst Dr.	2022-07-13 00:00:00																	87	328	365	258
+2771	21	Pharmacy Ave. and Surrey ave	2022-09-16 00:00:00																	81	400	507	375
+2772	6	Keele St. and 401 C W Keele St. Ramp	2022-05-20 00:00:00																	1314	1356	1012	834
+2773	13	Jarvis St. and Gerrard St.	2022-07-22 00:00:00																	72	152	123	92
+2774	23	Sheppard Ave. and Washburn Way/Lapsley Rd.	2022-12-21 00:00:00																	21	641	225	456
+2775	23	Steeles Ave. and Middlefield Rd.	2022-06-29 00:00:00																	61	223	181	134
+2776	17	Victoria Park Ave. and Van Horne Ave.	2022-07-22 00:00:00																	240	503	331	268
+2777	25	Morningside Ave. and Finch Ave. / Staines Rd.	2022-06-29 00:00:00																	1085	1676	1443	903
+2778	22	Finch Ave. and Pharmacy Ave	2022-09-16 00:00:00																	257	923	783	536
+2779	17	Victoria Park Ave. and Finch Ave.	2023-02-03 00:00:00																		462	389	498
+2780	25	Sheppard Ave. and Breckon Gt./Brenyon Way	2022-09-27 00:00:00																	58	246	263	501
+2781	17	Sheppard ave. and Leslie St.	2022-08-29 00:00:00																	1053	3476	2569	2112
+2782	8	Dufferin St. and Lawrence Ave. W.	2022-09-27 00:00:00																	21	118	109	96
+2783	13	Church St. and Carlton St.	2022-12-22 00:00:00																	1	142	133	121
+2784	2	Eglinton Ave. and Centennial Park Blvd.	2022-12-22 00:00:00																	30	1884	1558	1274
+2785	17	Hwy. 404 and Steeles Ave.	2024-10-03 00:00:00																		0	454	2111
+2786	5	Jane St. and Maple Leaf Dr.	2022-09-27 00:00:00																	14	477	760	570
+2787	8	Caledonia Rd. and Castlefield Ave.	2022-09-16 00:00:00																	178	628	0	0
+2788	25	Morningside Ave. and Casebridge Crt.	2022-11-23 00:00:00																	11	145	90	129
+2789	24	Scarborough Golf Club Rd. and Kingston Rd.	2022-10-14 00:00:00																	106	378	388	325
+2790	15	Don Mills Rd. and Overlea Blvd./Gateway Blvd.	2022-12-21 00:00:00																	1	141	91	72
+2791	24	Morningside Ave. and Kingston Rd.	2023-02-28 00:00:00																		141	166	150
+2792	22	Pharmacy Ave. and Huntingdale Blvd.	2022-12-05 00:00:00																	13	286	220	206
+2793	17	Victoria Park Ave. and Gordon Baker Rd.	2022-09-27 00:00:00																	162	495	416	372
+2794	24	Markham Rd. and Brimorton Dr.	2022-10-11 00:00:00																	199	932	914	841
+2795	1	Highway 27 and Carrier Dr.	2022-12-22 00:00:00																	3	143	128	101
+2796	1	Rexdale Blvd. and Islington Ave.*	-	-																	0	0	0
+2797	2	Kipling Ave. and The Westway	2022-10-11 00:00:00																		286	251	246
+2798	21	Kennedy Rd. and Progress Ave./Glamorgan Ave.	2022-11-14 00:00:00																	49	1354	1099	872
+2799	17	Victoria Park Ave. and Old Sheppard Ave.	2022-11-23 00:00:00																	37	479	734	543
+2800	16	Victoria Park Ave. and Jonesville Cres./Craigton Dr.	2022-12-21 00:00:00																	11	602	503	429
+2801	22	Bridletown Crcl. And Finch Ave. (W Intersection)	2022-11-29 00:00:00																	73	1216	939	708
+2802	7	Steeles Ave. and Fenmar Dr.	2023-01-18 00:00:00																		656	593	696
+2803	16	Victoria Park Ave. and Ellesmere Rd.	2022-11-29 00:00:00																	44	378	281	289
+2804	23	Finch Ave. and Sandhurst Crcl. (W Intersection)	2022-11-29 00:00:00																	77	1316	911	658
+2805	1	Finch Ave. and Humber College Blvd.	2022-11-02 00:00:00																	166	989	1127	822
+2806	22	Sheppard Ave. and Aragon Ave.	2022-11-23 00:00:00																	116	1258	1009	611
+2807	21	Ellesmere Rd. and Pharmacy Ave.	2022-11-14 00:00:00																	62	652	435	365
+2808	23	Middlefield Rd. and McNicoll Ave.	2022-11-14 00:00:00																	86	884	786	560
+2809	25	Sheppard Ave. and Meadowvale Rd.	2023-02-28 00:00:00																		231	157	108
+2810	10	Harbour St. and York St.	2022-10-22 00:00:00																	9	2389	527	729
+2811	14	Coxwell Ave. and Mortimer Ave.	2022-12-21 00:00:00																	9	302	330	236
+2812	16	Victoria Park Ave. and Curlew Dr.	2022-11-23 00:00:00																	68	963	900	661
+2813	17	Don Mills Rd. and Leith Hill Rd.	2022-11-24 00:00:00																	107	825	202	411
+2814	16	Don Mills Rd. and York Mills Rd.	2023-04-26 00:00:00																		112	338	240
+2815	3	The Queensway and 427 C S Queensway Ramp	2024-04-05 00:00:00																			308	647
+2816	8	Avenue Rd. and Wilson Ave.	2024-09-18 00:00:00																			101	270
+2817	5	Black Creek Dr. and Trethewey Dr.	2025-12-15 00:00:00																				3
+2818	23	Finch Ave. and Midland Ave.	2025-12-19 00:00:00																				2
+2820	3	Dundas St. W Near 4245 Dundas St. W	2025-07-03 00:00:00																				1112
+2821	7	Jane St. and Grandravine Dr.	2025-10-14 00:00:00																				217
+2025 Data is from January 1 2025 to December 31, 2025.
+* Existing sites that have been decommissioned
+** RLC site built, intersection is under third party construction

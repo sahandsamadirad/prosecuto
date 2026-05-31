@@ -1,15 +1,10 @@
-"""Phase 10 tests: the Judge Mode court state machine.
-
-Fake characters return deterministic per-phase text so the test exercises the
-state machine — phase ordering, wait-on-user pauses, the crown-cross pause, and
-the verdict→feedback tail — not the LLM. Covers Phase 10 "done when": a full
-mock trial runs from call-to-order to feedback with the right speaker each beat.
-"""
+"""Judge Mode tests: a single judge runs a question/answer mock hearing."""
 
 from __future__ import annotations
 
 from app.agents.base import AgentResult
 from app.orchestrator.graph_judge import (
+    MAX_JUDGE_ANSWERS,
     JudgeCharacters,
     astream_court_turn,
     build_judge_graph,
@@ -17,26 +12,20 @@ from app.orchestrator.graph_judge import (
 from app.orchestrator.state import CourtPhase, SessionState
 
 
-class FakeChar:
-    def __init__(self, name):
-        self.name = name
+class FakeJudge:
+    name = "judge"
 
     async def run(self, state: SessionState) -> AgentResult:
         return AgentResult(
             updated_state=state,
-            assistant_text=f"{self.name} speaking at {state.court_phase.value}",
+            assistant_text=f"judge speaking at {state.court_phase.value}",
         )
 
 
 def _graph():
     from langgraph.checkpoint.memory import MemorySaver
 
-    chars = JudgeCharacters(
-        clerk=FakeChar("court_clerk"),
-        judge=FakeChar("judge"),
-        prosecutor=FakeChar("crown_prosecutor"),
-    )
-    return build_judge_graph(chars, MemorySaver())
+    return build_judge_graph(JudgeCharacters(judge=FakeJudge()), MemorySaver())
 
 
 def _session():
@@ -52,37 +41,55 @@ async def _drive(graph, session, msg=None):
     return out
 
 
-async def test_short_trial_one_dialogue_then_verdict():
-    """Deterministic short trial: opening beats → one defence turn → verdict+feedback."""
+async def test_judge_opens_with_one_question_then_waits():
     graph = _graph()
     s = _session()
 
-    # Opening run: clerk, clerk, judge, crown → pause at DEFENCE_OPENING.
     t = await _drive(graph, s)
-    assert [sp for sp, _ in t] == ["court_clerk", "court_clerk", "judge", "crown_prosecutor"]
-    assert s.court_phase == CourtPhase.DEFENCE_OPENING
 
-    # The defendant's single dialogue → straight to VERDICT then FEEDBACK → DONE.
-    t = await _drive(graph, s, "My defence, Your Worship: I was not the driver.")
-    assert [sp for sp, _ in t] == ["judge", "judge"]
-    assert "verdict" in t[0][1]
-    assert "feedback" in t[1][1]
-    assert s.court_phase == CourtPhase.DONE
+    assert [sp for sp, _ in t] == ["judge"]
+    assert "questioning" in t[0][1]
+    assert s.court_phase == CourtPhase.QUESTIONING
 
 
-async def test_court_transcript_records_both_sides():
+async def test_judge_asks_once_per_user_answer_then_finalizes():
     graph = _graph()
     s = _session()
     await _drive(graph, s)
-    await _drive(graph, s, "My opening, Your Worship.")
 
-    # Defendant words land in court_transcript tagged 'defence'.
-    user_turns = [t for t in s.court_transcript if t.role == "user"]
-    assert any(t.agent == "defence" and "opening" in t.content.lower() for t in user_turns)
-    # And character beats are recorded too.
-    assert any(t.role == "assistant" and t.agent == "court_clerk" for t in s.court_transcript)
-    # Overall transcript mirrors the proceedings.
-    assert len(s.transcript) >= len(s.court_transcript) - 0
+    for idx in range(MAX_JUDGE_ANSWERS - 1):
+        t = await _drive(graph, s, f"My answer {idx + 1}.")
+        assert [sp for sp, _ in t] == ["judge"]
+        assert "questioning" in t[0][1]
+        assert s.court_phase == CourtPhase.QUESTIONING
+
+    t = await _drive(graph, s, "My final answer.")
+    assert [sp for sp, _ in t] == ["judge"]
+    assert "final" in t[0][1]
+    assert s.court_phase == CourtPhase.DONE
+
+
+async def test_user_can_request_finish_early():
+    graph = _graph()
+    s = _session()
+    await _drive(graph, s)
+
+    t = await _drive(graph, s, "Please finish and give final feedback.")
+
+    assert [sp for sp, _ in t] == ["judge"]
+    assert "final" in t[0][1]
+    assert s.court_phase == CourtPhase.DONE
+
+
+async def test_court_transcript_records_judge_and_user():
+    graph = _graph()
+    s = _session()
+    await _drive(graph, s)
+    await _drive(graph, s, "My answer.")
+
+    assert any(t.role == "assistant" and t.agent == "judge" for t in s.court_transcript)
+    assert any(t.role == "user" and t.agent == "defence" for t in s.court_transcript)
+    assert len(s.transcript) == len(s.court_transcript)
 
 
 async def test_finished_trial_yields_nothing():
@@ -103,11 +110,11 @@ def test_to_speech_strips_markdown_for_voice():
 async def test_resume_trial_from_reloaded_state():
     graph1 = _graph()
     s = _session()
-    await _drive(graph1, s)  # advance to DEFENCE_OPENING
+    await _drive(graph1, s)
 
     reloaded = SessionState.model_validate_json(s.model_dump_json())
     graph2 = _graph()
-    # After reload, the single defence dialogue drives straight to verdict+feedback.
     t = await _drive(graph2, reloaded, "My defence, Your Worship.")
-    assert [sp for sp, _ in t] == ["judge", "judge"]
-    assert reloaded.court_phase == CourtPhase.DONE
+
+    assert [sp for sp, _ in t] == ["judge"]
+    assert reloaded.court_phase == CourtPhase.QUESTIONING

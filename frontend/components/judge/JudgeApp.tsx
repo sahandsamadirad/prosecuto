@@ -9,13 +9,14 @@ import {
   createSession,
   sendUserText,
   textSocketUrl,
+  uploadSessionFile,
   type BackendStatus,
   type StateUpdatePayload,
   type WSMessage,
 } from '@/lib/prosecuto-api';
 import { createSpeechRecognition, requestMicrophoneAccess, speakText, stopSpeech } from '@/lib/browser-voice';
 import { stripFormatting } from '@/lib/text';
-import { CHARS, DOCS, PHASES, VERDICT, type CharKey, type JudgeDocKey } from './data';
+import { CHARS, DOCS, VERDICT, type CharKey, type JudgeDocKey } from './data';
 
 const AvatarMount = dynamic(() => import('@/components/AvatarMount'), { ssr: false });
 
@@ -26,33 +27,22 @@ type Message = {
 };
 
 const DEFENCE_CHIPS = [
-  'I do solemnly affirm.',
-  "I'm the registered owner, but I was not the driver.",
+  'Please ask me the first question.',
+  'My defence is in the uploaded letter.',
   'I respectfully ask that the charge be dismissed.',
 ];
 
 const PHASE_INDEX: Record<string, number> = {
   idle: 0,
-  clerk_call_to_order: 0,
-  clerk_oath: 1,
-  judge_open: 2,
-  crown_opening: 3,
-  defence_opening: 4,
-  crown_case: 5,
-  defence_cross_crown: 6,
-  defence_case: 7,
-  crown_cross_defence: 8,
-  crown_closing: 9,
-  defence_closing: 10,
-  verdict: 11,
-  feedback: 11,
-  done: 11,
+  questioning: 0,
+  final: 1,
+  done: 1,
 };
+
+const JUDGE_STEPS = ['Questions', 'Finished'];
 
 function speakerToRole(agent?: string | null): CharKey {
   if (!agent) return 'judge';
-  if (agent.includes('clerk')) return 'clerk';
-  if (agent.includes('crown') || agent.includes('prosecutor')) return 'crown';
   if (agent.includes('prosecuto')) return 'prosecuto';
   return 'judge';
 }
@@ -76,9 +66,9 @@ export default function JudgeApp() {
   const [suggest, setSuggest] = useState<string[]>(DEFENCE_CHIPS);
   const [input, setInput] = useState('');
   const [speaking, setSpeaking] = useState(false);
-  const [active, setActive] = useState<CharKey>('clerk');
+  const [active, setActive] = useState<CharKey>('judge');
   const [caption, setCaption] = useState<{ who: CharKey; text: string; show: boolean }>({
-    who: 'clerk',
+    who: 'judge',
     text: '',
     show: false,
   });
@@ -87,6 +77,9 @@ export default function JudgeApp() {
   const [openDoc, setOpenDoc] = useState<JudgeDocKey | null>(null);
   const [mic, setMic] = useState(false);
   const [ended, setEnded] = useState(false);
+  const [trialStarted, setTrialStarted] = useState(false);
+  const [uploads, setUploads] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<BackendStatus>('idle');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [stateUpdate, setStateUpdate] = useState<StateUpdatePayload | null>(null);
@@ -133,80 +126,93 @@ export default function JudgeApp() {
     });
   }, [stopListening]);
 
-  const connect = useCallback(async () => {
+  const newSession = useCallback(async () => {
     setStatus('connecting');
-    setThinking(true);
+    setThinking(false);
     setError(null);
     setMessages([]);
     setStateUpdate(null);
     setEnded(false);
+    setTrialStarted(false);
+    setUploads([]);
     setSuggest(DEFENCE_CHIPS);
     socketRef.current?.close();
 
     try {
       const session = await createSession('judge');
       setSessionId(session.session_id);
-      const ws = new WebSocket(textSocketUrl(session.session_id));
-      socketRef.current = ws;
-
-      ws.onopen = () => setStatus('thinking');
-      ws.onerror = () => {
-        setThinking(false);
-        setStatus('error');
-        setError('Backend socket error. Make sure FastAPI is running on port 8000.');
-      };
-      ws.onclose = () => {
-        setThinking(false);
-        setStatus((prev) => (prev === 'error' ? prev : 'idle'));
-      };
-      ws.onmessage = (event) => {
-        const message = JSON.parse(event.data) as WSMessage;
-        const agentText = asAgentText(message);
-        if (agentText) {
-          const role = speakerToRole(agentText.agent);
-          const clean = stripFormatting(agentText.text);
-          setThinking(false);
-          setStatus('connected');
-          setMessages((m) => [...m, { role, text: clean, doc: docForCourtText(clean) }]);
-          speak(role, clean);
-          scrollDown();
-          return;
-        }
-
-        const update = asStateUpdate(message);
-        if (update) {
-          const phase = phaseFromSummary(update);
-          setThinking(false);
-          setStatus('connected');
-          setStateUpdate(update);
-          setCur(phase ? PHASE_INDEX[phase] ?? 0 : 0);
-          setEnded(phase === 'done');
-          setSuggest(phase === 'done' ? [] : DEFENCE_CHIPS);
-          return;
-        }
-
-        if (message.type === 'error') {
-          setThinking(false);
-          setStatus('error');
-          setError(String(message.payload.message || 'Backend returned an error.'));
-        }
-      };
+      setStatus('connected');
     } catch (exc) {
       setThinking(false);
       setStatus('error');
       setError(exc instanceof Error ? exc.message : 'Could not connect to backend.');
     }
-  }, [scrollDown, speak]);
+  }, []);
+
+  const startCourt = useCallback(() => {
+    if (!sessionId || thinking || trialStarted) return;
+    setStatus('thinking');
+    setThinking(true);
+    setError(null);
+    setTrialStarted(true);
+    socketRef.current?.close();
+
+    const ws = new WebSocket(textSocketUrl(sessionId));
+    socketRef.current = ws;
+
+    ws.onopen = () => setStatus('thinking');
+    ws.onerror = () => {
+      setThinking(false);
+      setStatus('error');
+      setError('Backend socket error. Make sure FastAPI is running on port 8000.');
+    };
+    ws.onclose = () => {
+      setThinking(false);
+      setStatus((prev) => (prev === 'error' ? prev : 'idle'));
+    };
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data) as WSMessage;
+      const agentText = asAgentText(message);
+      if (agentText) {
+        const role = speakerToRole(agentText.agent);
+        const clean = stripFormatting(agentText.text);
+        setThinking(false);
+        setStatus('connected');
+        setMessages((m) => [...m, { role, text: clean, doc: docForCourtText(clean) }]);
+        speak(role, clean);
+        scrollDown();
+        return;
+      }
+
+      const update = asStateUpdate(message);
+      if (update) {
+        const phase = phaseFromSummary(update);
+        setThinking(false);
+        setStatus('connected');
+        setStateUpdate(update);
+        setCur(phase ? PHASE_INDEX[phase] ?? 0 : 0);
+        setEnded(phase === 'done');
+        setSuggest(phase === 'done' ? [] : DEFENCE_CHIPS);
+        return;
+      }
+
+      if (message.type === 'error') {
+        setThinking(false);
+        setStatus('error');
+        setError(String(message.payload.message || 'Backend returned an error.'));
+      }
+    };
+  }, [sessionId, thinking, trialStarted, scrollDown, speak]);
 
   useEffect(() => {
-    connect();
+    newSession();
     return () => {
       if (capTimer.current) clearInterval(capTimer.current);
       stopListening();
       stopSpeech();
       socketRef.current?.close();
     };
-  }, [connect, stopListening]);
+  }, [newSession, stopListening]);
 
   useEffect(scrollDown, [messages, thinking, ended]);
 
@@ -231,6 +237,21 @@ export default function JudgeApp() {
       setThinking(false);
       setStatus('error');
       setError('Not connected to the backend yet. Try reconnecting.');
+    }
+  };
+
+  const uploadDefenceLetter = async (fileList: FileList | null) => {
+    const file = fileList?.[0];
+    if (!file || !sessionId) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const uploaded = await uploadSessionFile(sessionId, file);
+      setUploads((items) => [...items, uploaded.filename]);
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'Could not upload the defence letter.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -284,7 +305,7 @@ export default function JudgeApp() {
           <Link className="back-link" href="/">
             ← Prosecuto
           </Link>
-          <span className="mode-pill">Judge Mode · Backend trial</span>
+          <span className="mode-pill">Judge Mode · Q&A</span>
         </div>
 
         <div className="avatar-slot">
@@ -328,7 +349,7 @@ export default function JudgeApp() {
       <div className="panel">
         <div className="panel-head">
           <div>
-            <h1 className="serif">Provincial Offences Court</h1>
+            <h1 className="serif">Judge consultation</h1>
             <div className="sub">Backend session {sessionId ? sessionId.slice(0, 8) : 'connecting'}</div>
           </div>
           <div className="head-tabs">
@@ -342,22 +363,52 @@ export default function JudgeApp() {
         </div>
 
         <div className={'backend-strip ' + status}>
-          <span>{status === 'thinking' ? 'Court graph is running' : `Backend: ${status}`}</span>
+          <span>{status === 'thinking' ? 'Judge is thinking' : `Backend: ${status}`}</span>
           {stateUpdate?.summary && <span>{stateUpdate.summary}</span>}
-          {error && <button type="button" onClick={connect}>Reconnect</button>}
+          {error && <button type="button" onClick={newSession}>Reconnect</button>}
         </div>
 
         <div className="rail">
-          {PHASES.map((p, i) => (
+          {JUDGE_STEPS.map((label, i) => (
             <div key={i} className={'ph' + (i === cur && !ended ? ' cur' : '') + (i < cur || ended ? ' done' : '')}>
               <span className="dot">{i < cur || ended ? '✓' : i + 1}</span>
-              <span className="lb">{p.rail}</span>
+              <span className="lb">{label}</span>
             </div>
           ))}
         </div>
 
         {tab === 'chat' ? (
           <div className="transcript" ref={tRef}>
+            {!trialStarted && (
+              <div className="trial-prep">
+                <div>
+                  <div className="prep-kicker">Before court starts</div>
+                  <h2 className="serif">Upload your defence letter</h2>
+                  <p>
+                    Add your letter or notes first. The judge will stay paused here until you press Start judge.
+                  </p>
+                </div>
+                <label className="upload-box">
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt,.rtf,.png,.jpg,.jpeg"
+                    onChange={(event) => uploadDefenceLetter(event.currentTarget.files)}
+                    disabled={!sessionId || uploading}
+                  />
+                  <span>{uploading ? 'Uploading...' : 'Choose defence letter'}</span>
+                </label>
+                {uploads.length > 0 && (
+                  <div className="uploaded-list">
+                    {uploads.map((name) => (
+                      <span key={name}>{name}</span>
+                    ))}
+                  </div>
+                )}
+                <button className="btn btn-primary" type="button" onClick={startCourt} disabled={!sessionId || uploading}>
+                  Start judge
+                </button>
+              </div>
+            )}
             {messages.map((m, i) => {
               const meta = CHARS[m.role];
               return (
@@ -409,7 +460,7 @@ export default function JudgeApp() {
                 </div>
                 <div className="feedback-card">
                   <div className="verdict-actions">
-                    <button className="btn btn-primary" type="button" onClick={connect}>
+                    <button className="btn btn-primary" type="button" onClick={newSession}>
                       Run it again
                     </button>
                     <Link className="btn btn-ghost" href="/lawyer">
@@ -452,7 +503,7 @@ export default function JudgeApp() {
           <div className="input-row">
             <textarea
               rows={1}
-              placeholder={ended ? 'The trial has concluded.' : 'Address the court when it is your turn…'}
+              placeholder={ended ? 'The judge has finished.' : 'Answer the judge, or ask to finish…'}
               value={input}
               disabled={status === 'connecting' || ended}
               onChange={(e) => setInput(e.target.value)}

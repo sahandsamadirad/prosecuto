@@ -98,7 +98,7 @@ async def upload_ticket(
     file: UploadFile = File(...),
     mgr: SessionManager = Depends(get_manager),
 ):
-    await _require_session(session_id, mgr)
+    state = await _require_session(session_id, mgr)
 
     dest_dir = settings.uploads_path / session_id
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -116,6 +116,10 @@ async def upload_ticket(
             out.write(chunk)
 
     log.info("api.upload", session_id=session_id, filename=safe_name, size=size)
+    if safe_name not in state.uploaded_files:
+        state.uploaded_files.append(safe_name)
+        state.touch()
+        await mgr.save(state)
     return {"filename": safe_name, "size": size, "path": str(dest)}
 
 

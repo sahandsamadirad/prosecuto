@@ -184,6 +184,37 @@ html:has(.room), body:has(.room) { height: 100%; overflow: hidden; }
 }
 .error-note { color: var(--accent-red); background: #fff0ed; }
 
+.trial-prep {
+  border: 3px solid var(--ink); border-radius: 10px;
+  background: var(--surface); box-shadow: 4px 4px 0 var(--ink);
+  padding: 22px 24px; margin-bottom: 24px;
+  display: grid; gap: 14px; max-width: 680px;
+}
+.trial-prep .prep-kicker {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+}
+.trial-prep h2 {
+  font-size: 28px; text-transform: uppercase; letter-spacing: .04em; margin: 3px 0 8px;
+}
+.trial-prep p { margin: 0; color: var(--muted); line-height: 1.55; }
+.upload-box {
+  border: 2px dashed var(--line-2); border-radius: 8px;
+  background: var(--bg); padding: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 74px; transition: .18s;
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.upload-box:hover { border-color: var(--accent); color: var(--accent); background: var(--bg-tint); }
+.upload-box input { position: absolute; opacity: 0; pointer-events: none; }
+.uploaded-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.uploaded-list span {
+  border: 1px solid var(--line-2); border-radius: 999px;
+  background: var(--bg-tint); padding: 6px 10px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+}
+
 /* transcript scroll area */
 .transcript { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 26px 24px 12px; scroll-behavior: smooth; }
 .transcript::-webkit-scrollbar { width: 9px; }
@@ -272,9 +303,19 @@ html:has(.room), body:has(.room) { height: 100%; overflow: hidden; }
 .docview.open { pointer-events: auto; }
 .docview.open .scrim { background: #1a191633; }
 .docview.open .sheet { transform: none; }
-.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 22px; border-bottom: 1px solid var(--line); }
 .sheet-head .st { font-family: var(--serif); font-size: 19px; }
 .sheet-head .ss { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); }
+.sheet-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+.doc-action {
+  height: 42px; display: inline-flex; align-items: center; gap: 7px;
+  border: 2px solid var(--ink); border-radius: 12px; padding: 0 12px;
+  background: var(--bg); color: var(--ink); cursor: pointer;
+  font-family: var(--sans); font-size: 12px; font-weight: 700;
+  transition: .18s;
+}
+.doc-action:hover { background: var(--comic-yellow); }
+.doc-action svg { flex: none; }
 .sheet-body { flex: 1; overflow-y: auto; padding: 28px 30px; }
 .legal-doc { font-family: var(--serif); color: var(--ink); }
 .legal-doc .lh { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-2); border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; }
@@ -285,6 +326,13 @@ html:has(.room), body:has(.room) { height: 100%; overflow: hidden; }
 .legal-doc .cite { font-family: var(--mono); font-size: 13px; background: var(--bg-tint); border-radius: 6px; padding: 12px 14px; line-height: 1.6; }
 .legal-doc .sig-row { display: flex; gap: 40px; margin-top: 40px; }
 .legal-doc .sig { flex: 1; border-top: 1px solid var(--ink); padding-top: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+@media (max-width: 620px) {
+  .sheet-head { align-items: flex-start; flex-direction: column; }
+  .sheet-actions { width: 100%; }
+  .doc-action { flex: 1; justify-content: center; min-width: 0; }
+  .sheet-actions .icon-btn { margin-left: auto; }
+}
 
 /* ============================================================
    JUDGE MODE — trial phase rail & verdict
