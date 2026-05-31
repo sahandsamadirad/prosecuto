@@ -60,8 +60,22 @@ PATH_ALIASES = {
 
 
 class EmptyRetriever:
-    async def aretrieve(self, query: str, *args, **kwargs) -> RetrievalResult:
+    """Fast-mode retriever: no Chroma/rerank/RAG — always empty (self-RAG short-circuits)."""
+
+    def _empty(self, query: str) -> RetrievalResult:
         return RetrievalResult(query=query, passages=[], scores=[], source="none")
+
+    def retrieve(self, query: str, *args, **kwargs) -> RetrievalResult:
+        return self._empty(query)
+
+    async def aretrieve(self, query: str, *args, **kwargs) -> RetrievalResult:
+        return self._empty(query)
+
+    def _tavily_result(self, query: str) -> RetrievalResult:
+        return self._empty(query)
+
+    async def atavily_result(self, query: str) -> RetrievalResult:
+        return self._empty(query)
 
 
 def _fast_lawyer_graph():

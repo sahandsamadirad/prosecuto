@@ -136,6 +136,17 @@ async def arun_self_rag(
     source: RetrievalSource = retrieval.source
     tried_tavily = source == "tavily"
 
+    # No grounding sources at all (e.g. fast mode, or Chroma + Tavily both empty):
+    # generate once and return low confidence. Skips the grounding-retry loop and
+    # the Tavily escalation — there is nothing to ground against.
+    if not passages:
+        answer = await generate(query, [], False)
+        log.info("self_rag.no_sources", query=query, source=source)
+        return SelfRAGResult(
+            query=query, answer=answer, passages=[], source=source,
+            confidence="low", retries=0,
+        )
+
     answer, grounding, retries = await _agrounded_generation(
         query, passages, generate, critics, max_retries
     )

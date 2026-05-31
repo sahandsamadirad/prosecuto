@@ -37,8 +37,20 @@ from app.schemas.packages import DisclosurePackage, ERPackage
 
 
 class EmptyRetriever:
-    async def aretrieve(self, query: str, *args, **kwargs) -> RetrievalResult:
+    def _empty(self, query: str) -> RetrievalResult:
         return RetrievalResult(query=query, passages=[], scores=[], source="none")
+
+    def retrieve(self, query: str, *args, **kwargs) -> RetrievalResult:
+        return self._empty(query)
+
+    async def aretrieve(self, query: str, *args, **kwargs) -> RetrievalResult:
+        return self._empty(query)
+
+    def _tavily_result(self, query: str) -> RetrievalResult:
+        return self._empty(query)
+
+    async def atavily_result(self, query: str) -> RetrievalResult:
+        return self._empty(query)
 
 
 class FakeLawyerAgent:
