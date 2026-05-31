@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     session_ttl_hours: int = Field(default=24, alias="SESSION_TTL_HOURS")
     max_rag_retries: int = Field(default=2, alias="MAX_RAG_RETRIES")
     tavily_max_sources: int = Field(default=5, alias="TAVILY_MAX_SOURCES")
+    graph_runtime: str = Field(default="fast_ai", alias="PROSECUTO_GRAPH_RUNTIME")
 
     # --- Collection name (not in .env spec but needed everywhere) --------
     chroma_collection: str = Field(default="prosecuto", alias="CHROMA_COLLECTION")

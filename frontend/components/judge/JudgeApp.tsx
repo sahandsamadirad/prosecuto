@@ -3,6 +3,17 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  asAgentText,
+  asStateUpdate,
+  createSession,
+  sendUserText,
+  textSocketUrl,
+  type BackendStatus,
+  type StateUpdatePayload,
+  type WSMessage,
+} from '@/lib/prosecuto-api';
+import { createSpeechRecognition, speakText, stopSpeech } from '@/lib/browser-voice';
 import { CHARS, DOCS, PHASES, VERDICT, type CharKey, type JudgeDocKey } from './data';
 
 const AvatarMount = dynamic(() => import('@/components/AvatarMount'), { ssr: false });
@@ -13,10 +24,55 @@ type Message = {
   doc: JudgeDocKey | null;
 };
 
+const DEFENCE_CHIPS = [
+  'I do solemnly affirm.',
+  "I'm the registered owner, but I was not the driver.",
+  'I respectfully ask that the charge be dismissed.',
+];
+
+const PHASE_INDEX: Record<string, number> = {
+  idle: 0,
+  clerk_call_to_order: 0,
+  clerk_oath: 1,
+  judge_open: 2,
+  crown_opening: 3,
+  defence_opening: 4,
+  crown_case: 5,
+  defence_cross_crown: 6,
+  defence_case: 7,
+  crown_cross_defence: 8,
+  crown_closing: 9,
+  defence_closing: 10,
+  verdict: 11,
+  feedback: 11,
+  done: 11,
+};
+
+function speakerToRole(agent?: string | null): CharKey {
+  if (!agent) return 'judge';
+  if (agent.includes('clerk')) return 'clerk';
+  if (agent.includes('crown') || agent.includes('prosecutor')) return 'crown';
+  if (agent.includes('prosecuto')) return 'prosecuto';
+  return 'judge';
+}
+
+function phaseFromSummary(update: StateUpdatePayload | null): string | null {
+  const match = update?.summary?.match(/phase=([a-z_]+)/);
+  return match?.[1] ?? null;
+}
+
+function docForCourtText(text: string): JudgeDocKey | null {
+  const lower = text.toLowerCase();
+  if (lower.includes('photograph') || lower.includes('photo')) return 'photo';
+  if (lower.includes('camera operating') || lower.includes('calibration')) return 'camcert';
+  if (lower.includes('certificate of offence')) return 'certificate';
+  return null;
+}
+
 export default function JudgeApp() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [cur, setCur] = useState(-1);
-  const [suggest, setSuggest] = useState<string[]>([]);
+  const [cur, setCur] = useState(0);
+  const [suggest, setSuggest] = useState<string[]>(DEFENCE_CHIPS);
   const [input, setInput] = useState('');
   const [speaking, setSpeaking] = useState(false);
   const [active, setActive] = useState<CharKey>('clerk');
@@ -30,10 +86,16 @@ export default function JudgeApp() {
   const [openDoc, setOpenDoc] = useState<JudgeDocKey | null>(null);
   const [mic, setMic] = useState(false);
   const [ended, setEnded] = useState(false);
+  const [status, setStatus] = useState<BackendStatus>('idle');
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [stateUpdate, setStateUpdate] = useState<StateUpdatePayload | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
+  const recognitionRef = useRef<ReturnType<typeof createSpeechRecognition> | null>(null);
   const tRef = useRef<HTMLDivElement>(null);
   const capTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const sharedDocs = messages.filter((m) => m.doc).map((m) => m.doc!);
+  const sharedDocs = Array.from(new Set(messages.filter((m) => m.doc).map((m) => m.doc!)));
 
   const scrollDown = useCallback(() => {
     requestAnimationFrame(() => {
@@ -42,98 +104,139 @@ export default function JudgeApp() {
     });
   }, []);
 
-  const speak = useCallback((who: CharKey, text: string, after?: () => void) => {
+  const speak = useCallback((who: CharKey, text: string) => {
     if (capTimer.current) clearInterval(capTimer.current);
     setActive(who);
-    setSpeaking(true);
     setCaption({ who, text: '', show: true });
-    const words = text.split(' ');
-    let i = 0;
-    capTimer.current = setInterval(() => {
-      i += 1;
-      setCaption({ who, text: words.slice(0, i).join(' '), show: true });
-      if (i >= words.length) {
-        if (capTimer.current) clearInterval(capTimer.current);
-        setTimeout(() => {
-          setSpeaking(false);
-          after?.();
-        }, 650);
-      }
-    }, 48);
+    speakText(text, {
+      onStart: () => setSpeaking(true),
+      onProgress: (spokenText) => setCaption({ who, text: spokenText || text, show: true }),
+      onEnd: () => {
+        setCaption({ who, text, show: true });
+        setTimeout(() => setSpeaking(false), 300);
+      },
+    });
   }, []);
 
-  const charSpeak = useCallback(
-    (who: CharKey, text: string, docs: JudgeDocKey[] | undefined, after?: () => void) => {
-      setSuggest([]);
-      setThinking(true);
-      scrollDown();
-      setTimeout(() => {
-        setThinking(false);
-        setMessages((m) => [...m, { role: who, text, doc: null }]);
-        if (docs) {
-          docs.forEach((d, k) => {
-            setTimeout(() => {
-              setMessages((m) => [...m, { role: who, text: null, doc: d }]);
-              scrollDown();
-            }, 500 + k * 450);
-          });
-        }
-        speak(who, text, after);
-        scrollDown();
-      }, 800);
-    },
-    [speak, scrollDown]
-  );
+  const connect = useCallback(async () => {
+    setStatus('connecting');
+    setThinking(true);
+    setError(null);
+    setMessages([]);
+    setStateUpdate(null);
+    setEnded(false);
+    setSuggest(DEFENCE_CHIPS);
+    socketRef.current?.close();
 
-  function arrive(i: number) {
-    const p = PHASES[i];
-    if (!p) return;
-    setCur(i);
-    if (p.mode === 'auto' && p.who && p.text) {
-      charSpeak(p.who, p.text, p.docs, () => setTimeout(() => arrive(i + 1), 700));
-    } else if (p.mode === 'verdict' && p.who && p.text) {
-      charSpeak(p.who, p.text, undefined, () => setTimeout(() => setEnded(true), 600));
-    } else if (p.mode === 'user' && p.cue) {
-      charSpeak(p.cue.who, p.cue.text, undefined, () => setSuggest(p.suggest || []));
+    try {
+      const session = await createSession('judge');
+      setSessionId(session.session_id);
+      const ws = new WebSocket(textSocketUrl(session.session_id));
+      socketRef.current = ws;
+
+      ws.onopen = () => setStatus('thinking');
+      ws.onerror = () => {
+        setThinking(false);
+        setStatus('error');
+        setError('Backend socket error. Make sure FastAPI is running on port 8000.');
+      };
+      ws.onclose = () => {
+        setThinking(false);
+        setStatus((prev) => (prev === 'error' ? prev : 'idle'));
+      };
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data) as WSMessage;
+        const agentText = asAgentText(message);
+        if (agentText) {
+          const role = speakerToRole(agentText.agent);
+          setThinking(false);
+          setStatus('connected');
+          setMessages((m) => [...m, { role, text: agentText.text, doc: docForCourtText(agentText.text) }]);
+          speak(role, agentText.text);
+          scrollDown();
+          return;
+        }
+
+        const update = asStateUpdate(message);
+        if (update) {
+          const phase = phaseFromSummary(update);
+          setThinking(false);
+          setStatus('connected');
+          setStateUpdate(update);
+          setCur(phase ? PHASE_INDEX[phase] ?? 0 : 0);
+          setEnded(phase === 'done');
+          setSuggest(phase === 'done' ? [] : DEFENCE_CHIPS);
+          return;
+        }
+
+        if (message.type === 'error') {
+          setThinking(false);
+          setStatus('error');
+          setError(String(message.payload.message || 'Backend returned an error.'));
+        }
+      };
+    } catch (exc) {
+      setThinking(false);
+      setStatus('error');
+      setError(exc instanceof Error ? exc.message : 'Could not connect to backend.');
     }
-  }
+  }, [scrollDown, speak]);
 
   useEffect(() => {
-    const t = setTimeout(() => arrive(0), 700);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    connect();
+    return () => {
+      if (capTimer.current) clearInterval(capTimer.current);
+      recognitionRef.current?.abort();
+      stopSpeech();
+      socketRef.current?.close();
+    };
+  }, [connect]);
 
   useEffect(scrollDown, [messages, thinking, ended]);
 
   const send = (text?: string) => {
     const val = (text ?? input).trim();
-    if (!val || thinking) return;
-    const p = PHASES[cur];
-    if (!p || p.mode !== 'user') return;
+    if (!val || thinking || ended) return;
     if (capTimer.current) clearInterval(capTimer.current);
+    stopSpeech();
     setSpeaking(false);
     setMessages((m) => [...m, { role: 'me', text: val, doc: null }]);
     setInput('');
     setSuggest([]);
     setMic(false);
-    setTimeout(() => {
-      if (p.reply) {
-        charSpeak(p.reply.who, p.reply.text, undefined, () => setTimeout(() => arrive(cur + 1), 600));
-      } else {
-        arrive(cur + 1);
-      }
-    }, 550);
+    setThinking(true);
+    setStatus('thinking');
+    if (!sendUserText(socketRef.current, sessionId, val)) {
+      setThinking(false);
+      setStatus('error');
+      setError('Not connected to the backend yet. Try reconnecting.');
+    }
   };
 
-  const restart = () => {
-    setMessages([]);
-    setCur(-1);
-    setSuggest([]);
-    setEnded(false);
-    setCaption({ who: 'clerk', text: '', show: false });
-    setActive('clerk');
-    setTimeout(() => arrive(0), 500);
+  const toggleMic = () => {
+    if (mic) {
+      recognitionRef.current?.stop();
+      setMic(false);
+      return;
+    }
+
+    const recognition = createSpeechRecognition({
+      onInterim: (text) => setInput(text),
+      onFinal: (text) => {
+        setMic(false);
+        setInput('');
+        send(text);
+      },
+      onEnd: () => setMic(false),
+      onError: (message) => {
+        setMic(false);
+        setError(message);
+      },
+    });
+    recognitionRef.current = recognition;
+    if (!recognition) return;
+    setMic(true);
+    recognition.start();
   };
 
   const aMeta = CHARS[active];
@@ -145,7 +248,7 @@ export default function JudgeApp() {
           <Link className="back-link" href="/">
             ← Prosecuto
           </Link>
-          <span className="mode-pill">Judge Mode · Mock trial</span>
+          <span className="mode-pill">Judge Mode · Backend trial</span>
         </div>
 
         <div className="avatar-slot">
@@ -184,7 +287,7 @@ export default function JudgeApp() {
         <div className="panel-head">
           <div>
             <h1 className="serif">Provincial Offences Court</h1>
-            <div className="sub">City v. Defendant · HTA s.144</div>
+            <div className="sub">Backend session {sessionId ? sessionId.slice(0, 8) : 'connecting'}</div>
           </div>
           <div className="head-tabs">
             <button className={tab === 'chat' ? 'active' : ''} type="button" onClick={() => setTab('chat')}>
@@ -196,12 +299,15 @@ export default function JudgeApp() {
           </div>
         </div>
 
+        <div className={'backend-strip ' + status}>
+          <span>{status === 'thinking' ? 'Court graph is running' : `Backend: ${status}`}</span>
+          {stateUpdate?.summary && <span>{stateUpdate.summary}</span>}
+          {error && <button type="button" onClick={connect}>Reconnect</button>}
+        </div>
+
         <div className="rail">
           {PHASES.map((p, i) => (
-            <div
-              key={i}
-              className={'ph' + (i === cur && !ended ? ' cur' : '') + (i < cur || ended ? ' done' : '')}
-            >
+            <div key={i} className={'ph' + (i === cur && !ended ? ' cur' : '') + (i < cur || ended ? ' done' : '')}>
               <span className="dot">{i < cur || ended ? '✓' : i + 1}</span>
               <span className="lb">{p.rail}</span>
             </div>
@@ -212,10 +318,16 @@ export default function JudgeApp() {
           <div className="transcript" ref={tRef}>
             {messages.map((m, i) => {
               const meta = CHARS[m.role];
-              if (m.doc) {
-                return (
-                  <div key={i} className="turn" style={{ maxWidth: '78%' }}>
-                    <div className="doc-card" style={{ marginTop: 0 }} onClick={() => setOpenDoc(m.doc)} role="presentation">
+              return (
+                <div key={i} className={'turn' + (m.role === 'me' ? ' me' : '')}>
+                  <div className="meta">
+                    <span className={'av ' + meta.av}>{meta.glyph}</span>
+                    <span className="nm">{meta.nm}</span>
+                    <span className="rl">{meta.rl}</span>
+                  </div>
+                  {m.text && <div className="body">{m.text}</div>}
+                  {m.doc && (
+                    <div className="doc-card" onClick={() => setOpenDoc(m.doc)} role="presentation">
                       <div className="dc-top">
                         <div className="dc-ico" />
                         <div>
@@ -225,17 +337,7 @@ export default function JudgeApp() {
                         <div className="dc-open">Open →</div>
                       </div>
                     </div>
-                  </div>
-                );
-              }
-              return (
-                <div key={i} className={'turn' + (m.role === 'me' ? ' me' : '')}>
-                  <div className="meta">
-                    <span className={'av ' + meta.av}>{meta.glyph}</span>
-                    <span className="nm">{meta.nm}</span>
-                    <span className="rl">{meta.rl}</span>
-                  </div>
-                  <div className="body">{m.text}</div>
+                  )}
                 </div>
               );
             })}
@@ -254,30 +356,18 @@ export default function JudgeApp() {
                 </div>
               </div>
             )}
-
             {ended && (
               <div className="verdict-wrap">
                 <div className="verdict-banner">
                   <div className="vb-top">
-                    <div className="vlabel">The court finds the defendant</div>
+                    <div className="vlabel">The backend court graph has concluded</div>
                     <div className="vresult serif">{VERDICT.result}</div>
                   </div>
-                  <div className="vline">{VERDICT.line}</div>
+                  <div className="vline">Review the judge&apos;s final backend feedback in the transcript above.</div>
                 </div>
                 <div className="feedback-card">
-                  <div className="fh">
-                    <span className="av">✦</span>
-                    <span className="nm">Prosecuto</span>
-                    <span className="rl">Breaking character · performance review</span>
-                  </div>
-                  {VERDICT.feedback.map((f, i) => (
-                    <div key={i} className={'fb-item ' + f.cls}>
-                      <span className="k">{f.k}</span>
-                      <span>{f.t}</span>
-                    </div>
-                  ))}
                   <div className="verdict-actions">
-                    <button className="btn btn-primary" type="button" onClick={restart}>
+                    <button className="btn btn-primary" type="button" onClick={connect}>
                       Run it again
                     </button>
                     <Link className="btn btn-ghost" href="/lawyer">
@@ -287,22 +377,13 @@ export default function JudgeApp() {
                 </div>
               </div>
             )}
+            {error && <div className="error-note">{error}</div>}
           </div>
         ) : (
           <div className="transcript" ref={tRef}>
-            {sharedDocs.length === 0 && (
-              <p style={{ color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: '13px' }}>
-                No exhibits tendered yet.
-              </p>
-            )}
+            {sharedDocs.length === 0 && <p className="empty-note">No exhibits detected in backend transcript yet.</p>}
             {sharedDocs.map((d, i) => (
-              <div
-                key={i}
-                className="doc-card"
-                style={{ marginBottom: '14px' }}
-                onClick={() => setOpenDoc(d)}
-                role="presentation"
-              >
+              <div key={i} className="doc-card" style={{ marginBottom: '14px' }} onClick={() => setOpenDoc(d)} role="presentation">
                 <div className="dc-top">
                   <div className="dc-ico" />
                   <div>
@@ -329,14 +410,9 @@ export default function JudgeApp() {
           <div className="input-row">
             <textarea
               rows={1}
-              placeholder={
-                ended
-                  ? 'The trial has concluded.'
-                  : PHASES[cur] && PHASES[cur].mode === 'user'
-                    ? 'Address the court… (it\'s your turn)'
-                    : 'Listening to the court…'
-              }
+              placeholder={ended ? 'The trial has concluded.' : 'Address the court when it is your turn…'}
               value={input}
+              disabled={status === 'connecting' || ended}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -345,18 +421,13 @@ export default function JudgeApp() {
                 }
               }}
             />
-            <button
-              className={'icon-btn mic' + (mic ? ' live' : '')}
-              type="button"
-              onClick={() => setMic((v) => !v)}
-              title="Voice input"
-            >
+            <button className={'icon-btn mic' + (mic ? ' live' : '')} type="button" onClick={toggleMic} title={mic ? 'Stop voice input' : 'Start voice input'}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <rect x="9" y="3" width="6" height="11" rx="3" />
                 <path d="M6 11a6 6 0 0 0 12 0M12 17v4" />
               </svg>
             </button>
-            <button className="icon-btn send-btn" type="button" disabled={!input.trim()} onClick={() => send()} title="Send">
+            <button className="icon-btn send-btn" type="button" disabled={!input.trim() || thinking || ended} onClick={() => send()} title="Send">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>

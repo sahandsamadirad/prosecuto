@@ -55,6 +55,8 @@ export class AvatarStage {
   neckBone: THREE.Bone | null = null;
   leftEye: THREE.Bone | null = null;
   rightEye: THREE.Bone | null = null;
+  jawBone: THREE.Bone | null = null;
+  mouthMorphs: Array<{ mesh: THREE.Mesh; index: number; weight: number }> = [];
   lookTarget = new THREE.Vector3();
   private _tmp = new THREE.Vector3();
   private _quat = new THREE.Quaternion();
@@ -67,6 +69,7 @@ export class AvatarStage {
   private _rightEyeBaseRot: THREE.Quaternion | null = null;
   private _headBaseRot: THREE.Quaternion | null = null;
   private _neckBaseRot: THREE.Quaternion | null = null;
+  private _jawBaseRot: THREE.Quaternion | null = null;
   scene: THREE.Scene;
   clock: THREE.Clock;
   mixer: THREE.AnimationMixer | null = null;
@@ -165,12 +168,44 @@ export class AvatarStage {
       if (bone.name === 'Neck') this.neckBone = bone;
       if (bone.name === 'LeftEye') this.leftEye = bone;
       if (bone.name === 'RightEye') this.rightEye = bone;
+      if (bone.name.toLowerCase().includes('jaw')) this.jawBone = bone;
     });
 
     if (this.headBone) this._headBaseRot = this.headBone.quaternion.clone();
     if (this.neckBone) this._neckBaseRot = this.neckBone.quaternion.clone();
     if (this.leftEye) this._leftEyeBaseRot = this.leftEye.quaternion.clone();
     if (this.rightEye) this._rightEyeBaseRot = this.rightEye.quaternion.clone();
+    if (this.jawBone) this._jawBaseRot = this.jawBone.quaternion.clone();
+  }
+
+  _findMouthMorphs(root: THREE.Object3D) {
+    const names = ['jawopen', 'mouthopen', 'mouth_open', 'viseme_aa', 'aa', 'open'];
+    root.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return;
+      Object.entries(mesh.morphTargetDictionary).forEach(([name, index]) => {
+        const lower = name.toLowerCase();
+        if (names.some((n) => lower.includes(n))) {
+          this.mouthMorphs.push({ mesh, index, weight: lower.includes('jaw') ? 1 : 0.65 });
+        }
+      });
+    });
+  }
+
+  _applySpeechMotion(elapsed: number) {
+    const amp = this.speaking ? 0.25 + 0.45 * Math.abs(Math.sin(elapsed * 13)) : 0;
+
+    if (this.jawBone && this._jawBaseRot) {
+      this.jawBone.quaternion.copy(this._jawBaseRot);
+      this._euler.set(amp * 10 * DEG, 0, 0, 'YXZ');
+      this._offsetQuat.setFromEuler(this._euler);
+      this.jawBone.quaternion.multiply(this._offsetQuat);
+    }
+
+    this.mouthMorphs.forEach(({ mesh, index, weight }) => {
+      if (!mesh.morphTargetInfluences) return;
+      mesh.morphTargetInfluences[index] = amp * weight;
+    });
   }
 
   _applyCursorTracking(dt: number) {
@@ -285,6 +320,7 @@ export class AvatarStage {
   _setupPortrait(object: THREE.Object3D) {
     enhanceMaterials(object, this.renderer);
     this._findBones(object);
+    this._findMouthMorphs(object);
 
     this.pivot = new THREE.Group();
     this.rig = object;
@@ -374,12 +410,16 @@ export class AvatarStage {
     if (this.neckBone && this._neckBaseRot) {
       this.neckBone.quaternion.copy(this._neckBaseRot);
     }
+    if (this.jawBone && this._jawBaseRot) {
+      this.jawBone.quaternion.copy(this._jawBaseRot);
+    }
 
     // Update the animation mixer (idle breathing, talking mouth, etc.)
     this.mixer?.update(dt);
 
     // Apply cursor tracking offset on top of the animated pose
     this._applyCursorTracking(dt);
+    this._applySpeechMotion(this.clock.elapsedTime);
 
     if (this.headBone) {
       this.headBone.getWorldPosition(this._tmp);
