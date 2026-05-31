@@ -11,10 +11,28 @@ Agents never call each other — only the orchestrator routes between them.
 
 from __future__ import annotations
 
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from langchain_core.prompts import ChatPromptTemplate
+
+# Markdown artifacts a reasoning model sometimes emits despite instructions —
+# stripped so spoken (TTS) output doesn't read symbols aloud.
+_MD_BOLD = re.compile(r"(\*\*|__)(.*?)\1", re.DOTALL)
+_MD_HEADER = re.compile(r"(?m)^\s{0,3}#{1,6}\s*")
+_MD_BULLET = re.compile(r"(?m)^\s{0,3}[-*]\s+")
+_MD_TICKS = re.compile(r"`+")
+_BLANKLINES = re.compile(r"\n{3,}")
+
+
+def to_speech(text: str) -> str:
+    """Flatten light markdown into plain prose for the voice pipeline."""
+    text = _MD_BOLD.sub(r"\2", text)
+    text = _MD_HEADER.sub("", text)
+    text = _MD_BULLET.sub("", text)
+    text = _MD_TICKS.sub("", text)
+    return _BLANKLINES.sub("\n\n", text).strip()
 
 from app.orchestrator.state import SessionState
 from app.prompts.base import BASE_SYSTEM_PROMPT
@@ -100,3 +118,11 @@ class BaseAgent(ABC):
         )
         chain = prompt | self.llm.with_structured_output(output_model)
         return await chain.ainvoke(variables)
+
+    async def generate_text(self, human_template: str, variables: dict) -> str:
+        """Free-text generation (for speaking characters that don't need a schema)."""
+        prompt = ChatPromptTemplate.from_messages(
+            [("system", self.system_prompt), ("human", human_template)]
+        )
+        msg = await (prompt | self.llm).ainvoke(variables)
+        return to_speech(getattr(msg, "content", str(msg)))
