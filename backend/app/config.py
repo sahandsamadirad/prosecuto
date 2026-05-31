@@ -70,6 +70,15 @@ class Settings(BaseSettings):
     )
     a2f_endpoint: str = Field(default="grpc://localhost:52000", alias="A2F_ENDPOINT")
 
+    # --- Local LLM (llama-server alternative to NVIDIA NIM) --------------
+    # LLM_PROVIDER: "nvidia" | "local" | "auto"
+    # "auto" uses local when LOCAL_LLM_ENDPOINT is set, otherwise falls back to nvidia.
+    llm_provider: str = Field(default="auto", alias="LLM_PROVIDER")
+    local_llm_endpoint: str = Field(default="", alias="LOCAL_LLM_ENDPOINT")
+    local_llm_model: str = Field(default="qwen3.6-35b", alias="LOCAL_LLM_MODEL")
+    # Timeout in seconds — 10s is fine for cloud NIM; local 35B needs more headroom.
+    llm_timeout_seconds: float = Field(default=30.0, alias="LLM_TIMEOUT_SECONDS")
+
     # --- Behavioural knobs ------------------------------------------------
     session_ttl_hours: int = Field(default=24, alias="SESSION_TTL_HOURS")
     max_rag_retries: int = Field(default=2, alias="MAX_RAG_RETRIES")

@@ -1,13 +1,12 @@
-"""Chat LLM factory — NVIDIA Nemotron Super 49B via LangChain.
+"""Chat LLM factory — NVIDIA Nemotron Super 49B via NIM, or local llama-server.
 
-ARCHITECTURE.md pins the LLM for the Lawyer, Judge, Prosecutor and every critic
-to ``nvidia/llama-3.3-nemotron-super-49b-v1``, accessed through
-``langchain-nvidia-ai-endpoints`` (``ChatNVIDIA``). Everything that needs a chat
-model — agents and critics — obtains it here so the model name, temperature and
-timeout policy live in one place.
+``LLM_PROVIDER`` controls which backend is used:
+  - ``"nvidia"``  — always use NVIDIA NIM (ChatNVIDIA, requires NVIDIA_API_KEY)
+  - ``"local"``   — always use the llama-server at LOCAL_LLM_ENDPOINT (OpenAI-compat API)
+  - ``"auto"``    — use local when LOCAL_LLM_ENDPOINT is set, otherwise nvidia
 
-``with_structured_output(PydanticModel)`` is used directly on the returned model
-for the critics/graders, mirroring the reference Self-RAG ``chains`` pattern.
+The per-request timeout is now ``LLM_TIMEOUT_SECONDS`` (default 30 s); 10 s was
+fine for the low-latency NIM cloud but is too tight for local 35B inference.
 """
 
 from __future__ import annotations
@@ -18,27 +17,53 @@ from app.config import settings
 
 log = structlog.get_logger(__name__)
 
-# Anti-pattern guard from IMPLEMENTATION_PLAN.md: no single LLM call may hang
-# the pipeline. Hard per-request timeout.
-LLM_TIMEOUT_SECONDS = 10.0
-
 
 def get_chat_llm(temperature: float = 0.0, **kwargs):
-    """Return a ``ChatNVIDIA`` instance for Nemotron Super 49B.
+    """Return a chat LLM instance routed to the configured provider.
 
     Args:
         temperature: 0.0 for deterministic critic/structured calls; raise for
             conversational agents that want some variety.
-        **kwargs: forwarded to ``ChatNVIDIA`` (e.g. ``max_tokens``).
+        **kwargs: forwarded to the underlying LangChain class.
     """
+    use_local = (
+        settings.llm_provider == "local"
+        or (settings.llm_provider == "auto" and bool(settings.local_llm_endpoint))
+    )
+
+    if use_local:
+        from langchain_openai import ChatOpenAI
+
+        llm = ChatOpenAI(
+            model=settings.local_llm_model,
+            base_url=settings.local_llm_endpoint,
+            api_key="local",
+            temperature=temperature,
+            timeout=settings.llm_timeout_seconds,
+            **kwargs,
+        )
+        log.info(
+            "llm.selected",
+            provider="local",
+            model=settings.local_llm_model,
+            endpoint=settings.local_llm_endpoint,
+            temperature=temperature,
+        )
+        return llm
+
     from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
     llm = ChatNVIDIA(
         model=settings.nim_llm_model,
         api_key=settings.nvidia_api_key,
         temperature=temperature,
-        timeout=LLM_TIMEOUT_SECONDS,
+        timeout=settings.llm_timeout_seconds,
         **kwargs,
     )
-    log.info("llm.selected", model=settings.nim_llm_model, temperature=temperature)
+    log.info(
+        "llm.selected",
+        provider="nvidia",
+        model=settings.nim_llm_model,
+        temperature=temperature,
+    )
     return llm
