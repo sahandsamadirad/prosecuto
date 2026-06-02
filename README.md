@@ -37,10 +37,9 @@ Prosecuto was built during [NVIDIA Spark Hack - Toronto](https://luma.com/spark-
 
 Prosecuto turns an intimidating ticket dispute into a guided preparation workflow:
 
-- **Lawyer Mode** interviews the user, extracts ticket details, explains the available dispute paths, and produces a practical preparation package.
-- **Documents Mode** presents generated notes and legal materials in a polished drawer with copy and download actions.
-- **Judge Mode** lets the user upload a defence letter, then rehearse through a simplified one-judge Q&A mock hearing.
-- **RAG-backed legal reasoning** grounds answers in a local Ontario-focused corpus, Chroma retrieval, reranking, and fallback search.
+- **Lawyer Mode** interviews the user, extracts ticket details, explains the available dispute paths, and produces a practical preparation package. A built-in document tab presents generated notes and legal materials in a drawer with copy and download actions.
+- **Judge Mode** lets the user upload a defence letter, then rehearse through a simplified one-judge Q&A mock hearing with a Justice of the Peace.
+- **RAG-backed legal reasoning** grounds answers in a local Ontario-focused corpus using Chroma retrieval, reranking, and Tavily fallback search (active when `PROSECUTO_GRAPH_RUNTIME` is not `fast_ai`).
 - **3D avatar interface** makes the experience feel more like a live consultation than a static form.
 
 <p align="center">
@@ -150,21 +149,38 @@ Open:
 
 ## Environment
 
-The backend reads configuration from `backend/.env`.
+The backend reads configuration from `backend/.env`. Copy `.env.example` to get started.
 
 ```bash
+# --- Secrets ---
 NVIDIA_API_KEY=
 TAVILY_API_KEY=
+ADMIN_TOKEN=                        # required for POST /api/index/rebuild
+
+# --- Infra ---
 REDIS_URL=redis://localhost:6379/0
 CHROMA_COLLECTION=prosecuto
-LLM_PROVIDER=auto
-LOCAL_LLM_ENDPOINT=
+
+# --- NVIDIA NIM models ---
+NIM_LLM_MODEL=nvidia/llama-3.3-nemotron-super-49b-v1
+NIM_EMBED_MODEL=nvidia/nv-embedqa-e5-v5
+NIM_RERANK_MODEL=nv-rerank-qa-mistral-4b:1
+
+# --- Local LLM (alternative to NVIDIA NIM) ---
+LLM_PROVIDER=auto                   # nvidia | local | auto
+LOCAL_LLM_ENDPOINT=                 # e.g. http://localhost:8081/v1
 LOCAL_LLM_MODEL=qwen3.6-35b
-LOCAL_LLM_API_KEY=password
-PROSECUTO_GRAPH_RUNTIME=fast_ai
+
+# --- Behaviour ---
+PROSECUTO_GRAPH_RUNTIME=fast_ai     # fast_ai skips RAG; any other value enables Chroma + rerank
+SESSION_TTL_HOURS=24
+MAX_RAG_RETRIES=2
+TAVILY_MAX_SOURCES=5
 ```
 
 If Redis is not running, Prosecuto falls back to in-memory sessions for local development.
+
+`PROSECUTO_GRAPH_RUNTIME=fast_ai` (the default) runs without RAG for speed — the LLM answers directly from its context. Set it to any other value (e.g. `full`) to enable Chroma retrieval, reranking, and Tavily fallback.
 
 ## Project Structure
 
